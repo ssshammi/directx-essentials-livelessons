@@ -116,7 +116,7 @@ namespace Rendering
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		direct3DDeviceContext->IASetInputLayout(mInputLayout);
 
-		UINT stride = sizeof(VertexPositionTextureNormal);
+		UINT stride = sizeof(VertexPositionTexture);
 		UINT offset = 0;
 		direct3DDeviceContext->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
 		direct3DDeviceContext->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
@@ -158,22 +158,19 @@ namespace Rendering
 		const std::vector<XMFLOAT3>& sourceVertices = mesh.Vertices();
 		std::vector<XMFLOAT3>* textureCoordinates = mesh.TextureCoordinates().at(0);
 		assert(textureCoordinates->size() == sourceVertices.size());
-		const std::vector<XMFLOAT3>& normals = mesh.Normals();
-		assert(normals.size() == sourceVertices.size());
 
-		std::vector<VertexPositionTextureNormal> vertices;
+		std::vector<VertexPositionTexture> vertices;
 		vertices.reserve(sourceVertices.size());
 		for (UINT i = 0; i < sourceVertices.size(); i++)
 		{
 			XMFLOAT3 position = sourceVertices.at(i);
 			XMFLOAT3 uv = textureCoordinates->at(i);
-			XMFLOAT3 normal = normals.at(i);
-			vertices.push_back(VertexPositionTextureNormal(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y), normal));
+			vertices.push_back(VertexPositionTexture(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y)));
 		}
 
 		D3D11_BUFFER_DESC vertexBufferDesc;
 		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTextureNormal) * vertices.size();
+		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTexture) * vertices.size();
 		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
