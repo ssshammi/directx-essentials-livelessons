@@ -48,9 +48,9 @@ namespace Rendering
 		// Create a vertex buffer
 		VertexPositionColor vertices[] =
 		{
-			VertexPositionColor(XMFLOAT4(-0.5f, -0.5f, 0.5f, 1.0f), XMFLOAT4(&ColorHelper::Red[0])),
-			VertexPositionColor(XMFLOAT4(0.0f, 0.5f, 0.5f, 1.0f), XMFLOAT4(&ColorHelper::Green[0])),
-			VertexPositionColor(XMFLOAT4(0.5f, -0.5f, 0.5f, 1.0f), XMFLOAT4(&ColorHelper::Blue[0]))
+			VertexPositionColor(XMFLOAT4(-0.5f, -0.5f, 0.0f, 1.0f), XMFLOAT4(&ColorHelper::Red[0])),
+			VertexPositionColor(XMFLOAT4(0.0f, 0.5f, 0.0f, 1.0f), XMFLOAT4(&ColorHelper::Green[0])),
+			VertexPositionColor(XMFLOAT4(0.5f, -0.5f, 0.0f, 1.0f), XMFLOAT4(&ColorHelper::Blue[0]))
 		};
 
 		D3D11_BUFFER_DESC vertexBufferDesc;
