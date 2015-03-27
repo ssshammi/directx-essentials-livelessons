@@ -159,7 +159,7 @@ namespace Library
 		ID3D11Device* direct3DDevice = GetGame()->Direct3DDevice();
 		int length = 4 * (mSize + 1);
 		int size = sizeof(VertexPositionColor) * length;
-		std::unique_ptr<VertexPositionColor> vertexData(new VertexPositionColor[length]);		
+		std::unique_ptr<VertexPositionColor[]> vertexData(new VertexPositionColor[length]);		
 		VertexPositionColor* vertices = vertexData.get();
 
 		float adjustedScale = mScale * 0.1f;
