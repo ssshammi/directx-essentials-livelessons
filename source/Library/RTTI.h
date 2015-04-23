@@ -39,9 +39,9 @@ namespace Library
     #define RTTI_DECLARATIONS(Type, ParentType)                                                              \
         public:                                                                                              \
             static std::string TypeName() { return std::string(#Type); }                                     \
-            virtual const unsigned int& TypeIdInstance() const { return Type::TypeIdClass(); }               \
+            virtual const unsigned int& TypeIdInstance() const { return TypeIdClass(); }                     \
             static  const unsigned int& TypeIdClass() { return sRunTimeTypeId; }                             \
-            virtual Library::RTTI* QueryInterface( const unsigned int id ) const                             \
+            virtual RTTI* QueryInterface( const unsigned int id ) const                                      \
             {                                                                                                \
                 if (id == sRunTimeTypeId)                                                                    \
                     { return (RTTI*)this; }                                                                  \
