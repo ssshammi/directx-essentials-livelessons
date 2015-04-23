@@ -34,7 +34,7 @@ namespace Library
 		SetColor(XMCOLOR(color.x, color.y, color.z, color.w));
 	}
 
-	void Light::SetColor(XMCOLOR color)
+	void Light::SetColor(const XMCOLOR& color)
 	{
 		mColor = color;
 	}

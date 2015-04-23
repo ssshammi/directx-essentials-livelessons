@@ -17,7 +17,7 @@ namespace Library
 		XMVECTOR ColorVector() const;
 		void SetColor(FLOAT r, FLOAT g, FLOAT b, FLOAT a);
 		void SetColor(const XMFLOAT4& color);
-		void SetColor(XMCOLOR color);
+		void SetColor(const XMCOLOR& color);
 		void SetColor(FXMVECTOR color);
 
 	protected:

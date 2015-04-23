@@ -7,6 +7,8 @@ namespace Library
     class RTTI
     {
     public:
+		virtual ~RTTI() = default;
+
         virtual const unsigned int& TypeIdInstance() const = 0;
         
         virtual RTTI* QueryInterface(const unsigned id) const
