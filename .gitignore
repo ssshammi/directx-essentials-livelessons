@@ -40,3 +40,7 @@ source/Lesson6.3/bin/
 source/Lesson6.3/obj/
 source/Lesson6.4/bin/
 source/Lesson6.4/obj/
+build/packages/
+build/ipch/
+build/DirectX.VC.VC.opendb
+build/DirectX.VC.db
