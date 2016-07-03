@@ -12,11 +12,6 @@ namespace Rendering
 
 	public:
 		PointDemo(Library::Game& game);
-		PointDemo(const PointDemo&) = default;
-		PointDemo& operator=(const PointDemo&) = default;
-		PointDemo(PointDemo&&) = default;
-		PointDemo& operator=(PointDemo&&) = default;
-		~PointDemo() = default;
 
 		virtual void Initialize() override;
 		virtual void Draw(const Library::GameTime& gameTime) override;

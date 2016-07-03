@@ -15,16 +15,14 @@ namespace Rendering
 
 	void PointDemo::Initialize()
 	{
-		SetCurrentDirectory(UtilityWin32::ExecutableDirectory().c_str());
-
 		// Load a compiled vertex shader
 		std::vector<char> compiledVertexShader;
-		Utility::LoadBinaryFile(L"Content\\Effects\\VertexShader.cso", compiledVertexShader);		
+		Utility::LoadBinaryFile(L"Content\\Shaders\\PointDemoVS.cso", compiledVertexShader);		
 		ThrowIfFailed(mGame->Direct3DDevice()->CreateVertexShader(&compiledVertexShader[0], compiledVertexShader.size(), nullptr, mVertexShader.ReleaseAndGetAddressOf()), "ID3D11Device::CreatedVertexShader() failed.");
 
 		// Load a compiled pixel shader
 		std::vector<char> compiledPixelShader;
-		Utility::LoadBinaryFile(L"Content\\Effects\\PixelShader.cso", compiledPixelShader);
+		Utility::LoadBinaryFile(L"Content\\Shaders\\PointDemoPS.cso", compiledPixelShader);
 		ThrowIfFailed(mGame->Direct3DDevice()->CreatePixelShader(&compiledPixelShader[0], compiledPixelShader.size(), nullptr, mPixelShader.ReleaseAndGetAddressOf()), "ID3D11Device::CreatedPixelShader() failed.");
 	}
 
