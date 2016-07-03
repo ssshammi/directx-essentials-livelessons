@@ -44,3 +44,7 @@ build/packages/
 build/ipch/
 build/DirectX.VC.VC.opendb
 build/DirectX.VC.db
+source/Library.Desktop/bin/
+source/Library.Desktop/obj/
+source/Tools/ModelPipeline/bin/
+source/Tools/ModelPipeline/obj/

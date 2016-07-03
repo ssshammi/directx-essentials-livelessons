@@ -1,8 +1,10 @@
 #pragma once
 
-// Windows and standard libraries
+// Windows
 #include <windows.h>
 #include <wrl.h>
+
+// Standard
 #include <string>
 #include <sstream>
 
@@ -13,7 +15,7 @@
 #endif
 
 // DirectX
-#include <d3d11_1.h>
+#include <d3d11_2.h>
 #include <dxgi1_3.h>
 #include <DirectXMath.h>
 
