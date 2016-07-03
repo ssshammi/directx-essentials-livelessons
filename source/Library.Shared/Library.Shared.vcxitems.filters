@@ -64,9 +64,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Light.cpp">
       <Filter>Lights</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)KeyboardComponent.cpp">
-      <Filter>Misc</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)MatrixHelper.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
@@ -124,6 +121,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)VectorHelper.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)KeyboardComponent.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)ColorHelper.h">
@@ -174,9 +174,6 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Light.h">
       <Filter>Lights</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)KeyboardComponent.h">
-      <Filter>Misc</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)MatrixHelper.h">
       <Filter>Misc</Filter>
@@ -240,6 +237,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)VectorHelper.h">
       <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)KeyboardComponent.h">
+      <Filter>Input</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

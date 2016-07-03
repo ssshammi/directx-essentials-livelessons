@@ -7,13 +7,11 @@ using namespace Library;
 
 void InitializeWindow(HINSTANCE instance, const wstring& className, const wstring windowTitle, int showCommand);
 LRESULT WINAPI WndProc(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam);
-POINT CenterWindow(int windowWidth, int windowHeight);
+POINT CenterWindow(const SIZE& windowSize);
 void InitializeDirectX();
 void Shutdown(const wstring& className);
 
-const UINT mScreenWidth = 1024;
-const UINT mScreenHeight = 768;
-
+const SIZE RenderTargetSize = { 1024, 768 };
 HWND mWindowHandle;
 WNDCLASSEX mWindow;
 
@@ -80,11 +78,11 @@ void InitializeWindow(HINSTANCE instance, const wstring& className, const wstrin
 	mWindow.hbrBackground = GetSysColorBrush(COLOR_BTNFACE);
 	mWindow.lpszClassName = className.c_str();
 
-	RECT windowRectangle = { 0, 0, mScreenWidth, mScreenHeight };
+	RECT windowRectangle = { 0, 0, RenderTargetSize.cx, RenderTargetSize.cy };
 	AdjustWindowRect(&windowRectangle, WS_OVERLAPPEDWINDOW, FALSE);
 
 	RegisterClassEx(&mWindow);
-	POINT center = CenterWindow(mScreenWidth, mScreenHeight);
+	POINT center = CenterWindow(RenderTargetSize);
 	mWindowHandle = CreateWindow(className.c_str(), windowTitle.c_str(), WS_OVERLAPPEDWINDOW, center.x, center.y, windowRectangle.right - windowRectangle.left, windowRectangle.bottom - windowRectangle.top, nullptr, nullptr, instance, nullptr);
 
 	ShowWindow(mWindowHandle, showCommand);
@@ -103,14 +101,14 @@ LRESULT WINAPI WndProc(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lP
 	return DefWindowProc(windowHandle, message, wParam, lParam);
 }
 
-POINT CenterWindow(int windowWidth, int windowHeight)
+POINT CenterWindow(const SIZE& windowSize)
 {
 	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
 	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
 	POINT center;
-	center.x = (screenWidth - windowWidth) / 2;
-	center.y = (screenHeight - windowHeight) / 2;
+	center.x = (screenWidth - windowSize.cx) / 2;
+	center.y = (screenHeight - windowSize.cy) / 2;
 
 	return center;
 }
@@ -170,8 +168,8 @@ void InitializeDirectX()
 #endif
 
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { 0 };
-	swapChainDesc.Width = mScreenWidth;
-	swapChainDesc.Height = mScreenHeight;
+	swapChainDesc.Width = RenderTargetSize.cx;
+	swapChainDesc.Height = RenderTargetSize.cy;
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swapChainDesc.SampleDesc.Count = multiSamplingCount;
 	swapChainDesc.SampleDesc.Quality = multiSamplingQualityLevels - 1;
@@ -199,8 +197,8 @@ void InitializeDirectX()
 	ThrowIfFailed(mDirect3DDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, mRenderTargetView.GetAddressOf()), "IDXGIDevice::CreateRenderTargetView() failed.");
 
 	D3D11_TEXTURE2D_DESC depthStencilDesc = { 0 };
-	depthStencilDesc.Width = mScreenWidth;
-	depthStencilDesc.Height = mScreenHeight;
+	depthStencilDesc.Width = RenderTargetSize.cx;
+	depthStencilDesc.Height = RenderTargetSize.cy;
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.ArraySize = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -213,7 +211,7 @@ void InitializeDirectX()
 	ThrowIfFailed(mDirect3DDevice->CreateTexture2D(&depthStencilDesc, nullptr, depthStencilBuffer.GetAddressOf()), "IDXGIDevice::CreateTexture2D() failed.");
 	ThrowIfFailed(mDirect3DDevice->CreateDepthStencilView(depthStencilBuffer.Get(), nullptr, mDepthStencilView.ReleaseAndGetAddressOf()), "IDXGIDevice::CreateDepthStencilView() failed.");
 
-	D3D11_VIEWPORT viewport = CD3D11_VIEWPORT(0.0f, 0.0f, static_cast<float>(mScreenWidth), static_cast<float>(mScreenHeight));
+	D3D11_VIEWPORT viewport = CD3D11_VIEWPORT(0.0f, 0.0f, static_cast<float>(RenderTargetSize.cx), static_cast<float>(RenderTargetSize.cy));
 	mDirect3DDeviceContext->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), mDepthStencilView.Get());
 	mDirect3DDeviceContext->RSSetViewports(1, &viewport);
 }

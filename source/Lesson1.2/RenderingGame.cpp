@@ -16,19 +16,17 @@ namespace Rendering
 	void RenderingGame::Initialize()
 	{
 		mKeyboard = make_shared<KeyboardComponent>(*this);
-		mComponents.push_back(mKeyboard.get());
+		mComponents.push_back(mKeyboard);
 		mServices.AddService(KeyboardComponent::TypeIdClass(), mKeyboard.get());
 
 		mFpsComponent = make_shared<FpsComponent>(*this);
-		mComponents.push_back(mFpsComponent.get());
+		mComponents.push_back(mFpsComponent);
 
 		Game::Initialize();
 	}
 
 	void RenderingGame::Update(const GameTime &gameTime)
 	{
-		mFpsComponent->Update(gameTime);
-
 		if (mKeyboard->WasKeyPressedThisFrame(Keys::Escape))
 		{
 			Exit();

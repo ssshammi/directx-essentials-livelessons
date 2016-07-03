@@ -34,7 +34,6 @@ namespace Library
 		static DirectX::Mouse* Mouse();
 		
 		MouseComponent(Game& game, MouseModes mode = MouseModes::Absolute);
-		MouseComponent(const MouseComponent&) = delete;
 
 		const DirectX::Mouse::State& CurrentState() const;
 		const DirectX::Mouse::State& LastState() const;

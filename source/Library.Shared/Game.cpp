@@ -86,7 +86,7 @@ namespace Library
 		return mMultiSamplingQualityLevels;
 	}
 
-	const std::vector<GameComponent*>& Game::Components() const
+	const vector<shared_ptr<GameComponent>>& Game::Components() const
 	{
 		return mComponents;
 	}
@@ -118,6 +118,9 @@ namespace Library
 		// Free up all D3D resources.
 		mDirect3DDeviceContext->ClearState();
 		mDirect3DDeviceContext->Flush();
+		
+		mComponents.clear();
+		mComponents.shrink_to_fit();
 
 		mDepthStencilView = nullptr;
 		mRenderTargetView = nullptr;

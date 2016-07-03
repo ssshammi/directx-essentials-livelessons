@@ -7,6 +7,10 @@ namespace Library
 	class UtilityWin32
 	{
 	public:
+		static void InitializeWindow(WNDCLASSEX& window, HWND& windowHandle, HINSTANCE instance, const std::wstring& className, const std::wstring windowTitle, const SIZE& renderTargetSize, int showCommand);
+		static LRESULT WINAPI WndProc(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam);
+		static POINT CenterWindow(const SIZE& windowSize);
+
 		static std::string CurrentDirectory();
 		static std::wstring ExecutableDirectory();
 		static void PathJoin(std::wstring& dest, const std::wstring& sourceDirectory, const std::wstring& sourceFile);

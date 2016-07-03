@@ -31,8 +31,7 @@ namespace Library
 	public:
 		static DirectX::GamePad* GamePad();
 		
-		GamePadComponent(Game& game, int player);
-		GamePadComponent(const GamePadComponent&) = delete;
+		GamePadComponent(Game& game, int player = 0);
 
 		int Player() const;
 		const DirectX::GamePad::State& CurrentState() const;

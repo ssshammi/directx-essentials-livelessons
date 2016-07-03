@@ -1,43 +1,39 @@
 #pragma once
 
-#include "Common.h"
 #include "Game.h"
-
-using namespace Library;
+#include <windows.h>
+#include <functional>
 
 namespace Library
-{	
+{
+	class KeyboardComponent;
+	class MouseComponent;
+	class GamepadComponent;
 	class FpsComponent;
-	class Keyboard;
-	class Mouse;
-	class FirstPersonCamera;
 }
 
 namespace Rendering
 {
 	class PointDemo;
-
-    class RenderingGame : public Game
-    {
-    public:
-        RenderingGame(HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand);
+	
+	class RenderingGame final : public Library::Game
+	{
+	public:
+		RenderingGame(std::function<void*()> getWindowCallback, std::function<void(SIZE&)> getRenderTargetSizeCallback);
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-        virtual void Draw(const GameTime& gameTime) override;
+		virtual void Update(const Library::GameTime& gameTime) override;
+		virtual void Draw(const Library::GameTime& gameTime) override;
 
-	protected:
-		virtual void Shutdown() override;
+		void Exit();
 
-    private:
-        static const XMVECTORF32 BackgroundColor;
+	private:
+		static const DirectX::XMVECTORF32 BackgroundColor;
 
-		LPDIRECTINPUT8 mDirectInput;
-		std::unique_ptr<Keyboard> mKeyboard;
-		std::unique_ptr<Mouse> mMouse;
-		std::unique_ptr<FpsComponent> mFpsComponent;
-		std::unique_ptr<FirstPersonCamera> mCamera;
-
-		std::unique_ptr<PointDemo> mPointDemo;
-    };
+		std::shared_ptr<Library::KeyboardComponent> mKeyboard;
+		std::shared_ptr<Library::MouseComponent> mMouse;
+		std::shared_ptr<Library::GamePadComponent> mGamePad;
+		std::shared_ptr<Library::FpsComponent> mFpsComponent;
+		std::shared_ptr<PointDemo> mPointDemo;
+	};
 }

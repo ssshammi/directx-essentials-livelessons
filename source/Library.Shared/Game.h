@@ -59,7 +59,7 @@ namespace Library
 		UINT MultiSamplingCount() const;
 		UINT MultiSamplingQualityLevels() const;
 
-		const std::vector<GameComponent*>& Components() const;
+		const std::vector<std::shared_ptr<GameComponent>>& Components() const;
 		const ServiceContainer& Services() const;			
 
         virtual void Initialize();
@@ -108,7 +108,7 @@ namespace Library
 
         GameClock mGameClock;
         GameTime mGameTime;
-		std::vector<GameComponent*> mComponents;
+		std::vector<std::shared_ptr<GameComponent>> mComponents;
 		ServiceContainer mServices;
     };
 }
