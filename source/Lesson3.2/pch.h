@@ -86,4 +86,4 @@
 
 // Local
 #include "RenderingGame.h"
-#include "PointDemo.h"
+#include "CubeDemo.h"

@@ -6,7 +6,7 @@ using namespace Library;
 
 namespace ModelPipeline
 {
-	shared_ptr<Mesh> MeshProcessor::LoadMesh(Model& model, aiMesh& mesh)
+	shared_ptr<Library::Mesh> MeshProcessor::LoadMesh(Library::Model& model, aiMesh& mesh)
 	{
 		MeshData meshData;
 
@@ -86,6 +86,6 @@ namespace ModelPipeline
 			}
 		}
 
-		return make_shared<Mesh>(model, move(meshData));
+		return make_shared<Library::Mesh>(model, move(meshData));
 	}
 }

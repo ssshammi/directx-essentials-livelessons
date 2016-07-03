@@ -21,6 +21,10 @@ int main(int argc, char* argv[])
 		string inputFilename;
 		string inputDirectory;			
 		Library::Utility::GetFileNameAndDirectory(inputFile, inputDirectory, inputFilename);
+		if (inputDirectory.empty())
+		{
+			inputDirectory = UtilityWin32::CurrentDirectory();
+		}
 
 		SetCurrentDirectory(Library::Utility::ToWideString(inputDirectory).c_str());		
 		Model model = ModelProcessor::LoadModel(inputFilename, true);

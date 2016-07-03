@@ -38,7 +38,12 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
-    <FxCompile Include="Content\Shaders\SkyboxPS.hlsl" />
+    <FxCompile Include="Content\Shaders\SkyboxPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
     <FxCompile Include="Content\Shaders\SkyboxVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
@@ -49,6 +54,9 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Content\Shaders\%(Filename).cso</ObjectFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Content\Shaders\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Content\Fonts\Arial_14_Regular.spritefont" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8F60BA9C-AAB6-47E4-BD36-DCDEBF4D9AE6}</ProjectGuid>
@@ -139,6 +147,8 @@
     </Link>
     <PostBuildEvent>
       <Command>mkdir "$(SolutionDir)..\content"
+
+IF EXIST "$(ProjectDir)Content"  xcopy /E /Y "$(ProjectDir)Content" "$(OutDir)Content\"
 xcopy /E /Y "$(OutDir)Content" "$(SolutionDir)..\Content\"</Command>
     </PostBuildEvent>
     <FxCompile>
@@ -172,6 +182,8 @@ xcopy /E /Y "$(OutDir)Content" "$(SolutionDir)..\Content\"</Command>
     </Link>
     <PostBuildEvent>
       <Command>mkdir "$(SolutionDir)..\content"
+
+IF EXIST "$(ProjectDir)Content"  xcopy /E /Y "$(ProjectDir)Content" "$(OutDir)Content\"
 xcopy /E /Y "$(OutDir)Content" "$(SolutionDir)..\Content\"</Command>
     </PostBuildEvent>
     <FxCompile>
@@ -208,6 +220,8 @@ xcopy /E /Y "$(OutDir)Content" "$(SolutionDir)..\Content\"</Command>
     </Link>
     <PostBuildEvent>
       <Command>mkdir "$(SolutionDir)..\content"
+
+IF EXIST "$(ProjectDir)Content"  xcopy /E /Y "$(ProjectDir)Content" "$(OutDir)Content\"
 xcopy /E /Y "$(OutDir)Content" "$(SolutionDir)..\Content\"</Command>
     </PostBuildEvent>
     <FxCompile>
@@ -244,6 +258,8 @@ xcopy /E /Y "$(OutDir)Content" "$(SolutionDir)..\Content\"</Command>
     </Link>
     <PostBuildEvent>
       <Command>mkdir "$(SolutionDir)..\content"
+
+IF EXIST "$(ProjectDir)Content"  xcopy /E /Y "$(ProjectDir)Content" "$(OutDir)Content\"
 xcopy /E /Y "$(OutDir)Content" "$(SolutionDir)..\Content\"</Command>
     </PostBuildEvent>
     <FxCompile>

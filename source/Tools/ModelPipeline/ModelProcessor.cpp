@@ -6,9 +6,9 @@ using namespace DirectX;
 
 namespace ModelPipeline
 {
-	Model ModelProcessor::LoadModel(const std::string& filename, bool flipUVs)
+	Library::Model ModelProcessor::LoadModel(const std::string& filename, bool flipUVs)
 	{
-		Model model;
+		Library::Model model;
 		ModelData& modelData = model.Data();
 		Assimp::Importer importer;
 

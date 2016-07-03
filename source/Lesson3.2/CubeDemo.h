@@ -1,47 +1,51 @@
 #pragma once
 
+#include <wrl.h>
+#include <d3d11_2.h>
+#include <DirectXMath.h>
+#include <cstdint>
+#include <memory>
 #include "DrawableGameComponent.h"
 
-using namespace Library;
+namespace Library
+{
+	class Camera;
+}
 
 namespace Rendering
 {
-	class CubeDemo : public DrawableGameComponent
+	class CubeDemo : public Library::DrawableGameComponent
 	{
-		RTTI_DECLARATIONS(CubeDemo, DrawableGameComponent)
-
 	public:
-		CubeDemo(Game& game, Camera& camera);
-		~CubeDemo();
+		CubeDemo(Library::Game& game, const std::shared_ptr<Library::Camera>& camera);
 
-		CubeDemo() = delete;
-		CubeDemo(const CubeDemo& rhs) = delete;
-		CubeDemo& operator=(const CubeDemo& rhs) = delete;
+		bool AnimationEnabled() const;
+		void SetAnimationEnabled(bool enabled);
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-		virtual void Draw(const GameTime& gameTime) override;
+		virtual void Update(const Library::GameTime& gameTime) override;
+		virtual void Draw(const Library::GameTime& gameTime) override;
 
 	private:
 		struct CBufferPerObject
 		{
-			XMFLOAT4X4 WorldViewProjection;
+			DirectX::XMFLOAT4X4 WorldViewProjection;
 
-			CBufferPerObject() : WorldViewProjection() { }
-
-			CBufferPerObject(const XMFLOAT4X4& wvp) : WorldViewProjection(wvp) { }
+			CBufferPerObject() { }
+			CBufferPerObject(const DirectX::XMFLOAT4X4& wvp) : WorldViewProjection(wvp) { }
 		};
 
 		static const float RotationRate;
 
-		ID3D11VertexShader* mVertexShader;		
-		ID3D11PixelShader* mPixelShader;
-		ID3D11InputLayout* mInputLayout;
-		ID3D11Buffer* mVertexBuffer;
-		ID3D11Buffer* mIndexBuffer;
-		ID3D11Buffer* mConstantBuffer;
-		
+		DirectX::XMFLOAT4X4 mWorldMatrix;
 		CBufferPerObject mCBufferPerObject;
-		XMFLOAT4X4 mWorldMatrix;
+		Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
+		Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mConstantBuffer;		
+		std::uint32_t mIndexCount;
+		bool mAnimationEnabled;
 	};
 }

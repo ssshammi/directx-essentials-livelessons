@@ -13,6 +13,9 @@
     <Filter Include="Content\Shaders">
       <UniqueIdentifier>{c0e8cf9a-0a89-4864-8100-876153a8ad5c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Content\Fonts">
+      <UniqueIdentifier>{51588a5f-d4de-4eb8-b5c0-03896918dad5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\Shaders\BasicPS.hlsl">
@@ -27,5 +30,10 @@
     <FxCompile Include="Content\Shaders\SkyboxVS.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Content\Fonts\Arial_14_Regular.spritefont">
+      <Filter>Content\Fonts</Filter>
+    </None>
   </ItemGroup>
 </Project>
