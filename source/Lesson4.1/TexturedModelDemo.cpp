@@ -1,51 +1,39 @@
-#include "TexturedModelDemo.h"
-#include "Game.h"
-#include "GameException.h"
-#include "Utility.h"
-#include "VertexDeclarations.h"
-#include "ColorHelper.h"
-#include "MatrixHelper.h"
-#include "Camera.h"
-#include "Model.h"
-#include "Mesh.h"
-#include <WICTextureLoader.h>
+#include "pch.h"
+
+using namespace std;
+using namespace Library;
+using namespace DirectX;
 
 namespace Rendering
 {
-	RTTI_DEFINITIONS(TexturedModelDemo)
+	const float TexturedModelDemo::RotationRate = XM_PI;
 
-	TexturedModelDemo::TexturedModelDemo(Game& game, Camera& camera)
-		: DrawableGameComponent(game, camera), mVertexShader(nullptr), mInputLayout(nullptr), mPixelShader(nullptr), mVertexBuffer(nullptr),
-		  mIndexBuffer(nullptr), mConstantBuffer(nullptr), mCBufferPerObject(), mWorldMatrix(MatrixHelper::Identity), mIndexCount(0), mColorTexture(nullptr),
-		  mColorSampler(nullptr)
+	TexturedModelDemo::TexturedModelDemo(Game & game, const shared_ptr<Camera>& camera) :
+		DrawableGameComponent(game, camera), mWorldMatrix(MatrixHelper::Identity), mIndexCount(0), mAnimationEnabled(true)
 	{
 	}
 
-	TexturedModelDemo::~TexturedModelDemo()
+	bool TexturedModelDemo::AnimationEnabled() const
 	{
-		ReleaseObject(mColorSampler)
-		ReleaseObject(mColorTexture)
-		ReleaseObject(mConstantBuffer)
-		ReleaseObject(mIndexBuffer)
-		ReleaseObject(mVertexBuffer)
-		ReleaseObject(mPixelShader)
-		ReleaseObject(mInputLayout)
-		ReleaseObject(mVertexShader)
+		return mAnimationEnabled;
+	}
+
+	void TexturedModelDemo::SetAnimationEnabled(bool enabled)
+	{
+		mAnimationEnabled = enabled;
 	}
 
 	void TexturedModelDemo::Initialize()
 	{
-		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
-
 		// Load a compiled vertex shader
-		std::vector<char> compiledVertexShader;
-		Utility::LoadBinaryFile(L"Content\\Effects\\VertexShader.cso", compiledVertexShader);		
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateVertexShader(&compiledVertexShader[0], compiledVertexShader.size(), nullptr, &mVertexShader), "ID3D11Device::CreatedVertexShader() failed.");
+		vector<char> compiledVertexShader;
+		Utility::LoadBinaryFile(L"Content\\Shaders\\TexturedModelDemoVS.cso", compiledVertexShader);
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateVertexShader(&compiledVertexShader[0], compiledVertexShader.size(), nullptr, mVertexShader.ReleaseAndGetAddressOf()), "ID3D11Device::CreatedVertexShader() failed.");
 
 		// Load a compiled pixel shader
-		std::vector<char> compiledPixelShader;
-		Utility::LoadBinaryFile(L"Content\\Effects\\PixelShader.cso", compiledPixelShader);
-		ThrowIfFailed(mGame->Direct3DDevice()->CreatePixelShader(&compiledPixelShader[0], compiledPixelShader.size(), nullptr, &mPixelShader), "ID3D11Device::CreatedPixelShader() failed.");
+		vector<char> compiledPixelShader;
+		Utility::LoadBinaryFile(L"Content\\Shaders\\TexturedModelDemoPS.cso", compiledPixelShader);
+		ThrowIfFailed(mGame->Direct3DDevice()->CreatePixelShader(&compiledPixelShader[0], compiledPixelShader.size(), nullptr, mPixelShader.ReleaseAndGetAddressOf()), "ID3D11Device::CreatedPixelShader() failed.");
 
 		// Create an input layout
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
@@ -54,96 +42,89 @@ namespace Rendering
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 		};
 
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), &compiledVertexShader[0], compiledVertexShader.size(), &mInputLayout), "ID3D11Device::CreateInputLayout() failed.");
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), &compiledVertexShader[0], compiledVertexShader.size(), mInputLayout.ReleaseAndGetAddressOf()), "ID3D11Device::CreateInputLayout() failed.");
 
 		// Load the model
-		std::unique_ptr<Model> model = std::make_unique<Model>(*mGame, "Content\\Models\\Sphere.obj", true);
+		Library::Model model("Content\\Models\\Sphere.obj.bin");
 
 		// Create vertex and index buffers for the model
-		Mesh* mesh = model->Meshes().at(0);
-		CreateVertexBuffer(mGame->Direct3DDevice(), *mesh, &mVertexBuffer);
-		mesh->CreateIndexBuffer(&mIndexBuffer);
-		mIndexCount = mesh->Indices().size();
+		Mesh* mesh = model.Meshes().at(0).get();
+		CreateVertexBuffer(*mesh, mVertexBuffer.ReleaseAndGetAddressOf());
+		mesh->CreateIndexBuffer(*mGame->Direct3DDevice(), mIndexBuffer.ReleaseAndGetAddressOf());
+		mIndexCount = static_cast<uint32_t>(mesh->Indices().size());
 
-		// Create a constant buffer
-		D3D11_BUFFER_DESC constantBufferDesc;
-		ZeroMemory(&constantBufferDesc, sizeof(constantBufferDesc));
+		D3D11_BUFFER_DESC constantBufferDesc = { 0 };
 		constantBufferDesc.ByteWidth = sizeof(CBufferPerObject);
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, &mConstantBuffer), "ID3D11Device::CreateBuffer() failed.");
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, mConstantBuffer.ReleaseAndGetAddressOf()), "ID3D11Device::CreateBuffer() failed.");
 
 		// Load a texture
-		std::wstring textureName = L"Content\\Textures\\EarthComposite.jpg";
-		ThrowIfFailed(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName.c_str(), nullptr, &mColorTexture), "CreateWICTextureFromFile() failed.");
-
-		// Create a texture sampler
-		D3D11_SAMPLER_DESC samplerDesc;
-		ZeroMemory(&samplerDesc, sizeof(samplerDesc));
-		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateSamplerState(&samplerDesc, &mColorSampler), "ID3D11Device::CreateSamplerState() failed.");
+		wstring textureName = L"Content\\Textures\\EarthComposite.dds";
+		ThrowIfFailed(CreateDDSTextureFromFile(mGame->Direct3DDevice(), textureName.c_str(), nullptr, mColorTexture.ReleaseAndGetAddressOf()), "CreateDDSTextureFromFile() failed.");
 	}
 
-	void TexturedModelDemo::Draw(const GameTime& gameTime)
+	void TexturedModelDemo::Update(const GameTime & gameTime)
 	{
+		static float angle = 0.0f;
+
+		if (mAnimationEnabled)
+		{
+			angle += gameTime.ElapsedGameTimeSeconds().count() * RotationRate;
+			XMStoreFloat4x4(&mWorldMatrix, XMMatrixRotationY(angle));
+		}
+	}
+
+	void TexturedModelDemo::Draw(const GameTime & gameTime)
+	{
+		UNREFERENCED_PARAMETER(gameTime);
+		assert(mCamera != nullptr);
+
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		direct3DDeviceContext->IASetInputLayout(mInputLayout);
+		direct3DDeviceContext->IASetInputLayout(mInputLayout.Get());
 
 		UINT stride = sizeof(VertexPositionTexture);
 		UINT offset = 0;
-		direct3DDeviceContext->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
-		direct3DDeviceContext->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		direct3DDeviceContext->VSSetShader(mVertexShader, nullptr, 0);
-		direct3DDeviceContext->PSSetShader(mPixelShader, nullptr, 0);
+		direct3DDeviceContext->IASetVertexBuffers(0, 1, mVertexBuffer.GetAddressOf(), &stride, &offset);
+		direct3DDeviceContext->IASetIndexBuffer(mIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+
+		direct3DDeviceContext->VSSetShader(mVertexShader.Get(), nullptr, 0);
+		direct3DDeviceContext->PSSetShader(mPixelShader.Get(), nullptr, 0);
 
 		XMMATRIX worldMatrix = XMLoadFloat4x4(&mWorldMatrix);
 		XMMATRIX wvp = worldMatrix * mCamera->ViewProjectionMatrix();
 		wvp = XMMatrixTranspose(wvp);
 		XMStoreFloat4x4(&mCBufferPerObject.WorldViewProjection, wvp);
 
-		direct3DDeviceContext->UpdateSubresource(mConstantBuffer, 0, nullptr, &mCBufferPerObject, 0, 0);
-		direct3DDeviceContext->VSSetConstantBuffers(0, 1, &mConstantBuffer);
+		direct3DDeviceContext->UpdateSubresource(mConstantBuffer.Get(), 0, nullptr, &mCBufferPerObject, 0, 0);
+		direct3DDeviceContext->VSSetConstantBuffers(0, 1, mConstantBuffer.GetAddressOf());
 
-		direct3DDeviceContext->PSSetShaderResources(0, 1, &mColorTexture);
-		direct3DDeviceContext->PSSetSamplers(0, 1, &mColorSampler);
+		direct3DDeviceContext->PSSetShaderResources(0, 1, mColorTexture.GetAddressOf());
+		direct3DDeviceContext->PSSetSamplers(0, 1, SamplerStates::TrilinearWrap.GetAddressOf());
 
 		direct3DDeviceContext->DrawIndexed(mIndexCount, 0, 0);
 	}
 
-	void TexturedModelDemo::CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const
+	void TexturedModelDemo::CreateVertexBuffer(const Mesh& mesh, ID3D11Buffer** vertexBuffer) const
 	{
-		const std::vector<XMFLOAT3>& sourceVertices = mesh.Vertices();
+		const vector<XMFLOAT3>& sourceVertices = mesh.Vertices();
+		const auto& sourceUVs = mesh.TextureCoordinates().at(0);
 
-		std::vector<VertexPositionTexture> vertices;
+		vector<VertexPositionTexture> vertices;
 		vertices.reserve(sourceVertices.size());
-
-		std::vector<XMFLOAT3>* textureCoordinates = mesh.TextureCoordinates().at(0);
-		assert(textureCoordinates->size() == sourceVertices.size());
-
-		for (UINT i = 0; i < sourceVertices.size(); i++)
+		for (size_t i = 0; i < sourceVertices.size(); i++)
 		{
-			XMFLOAT3 position = sourceVertices.at(i);
-			XMFLOAT3 uv = textureCoordinates->at(i);
+			const XMFLOAT3& position = sourceVertices.at(i);
+			const XMFLOAT3& uv = sourceUVs->at(i);
 			vertices.push_back(VertexPositionTexture(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y)));
 		}
-
-		D3D11_BUFFER_DESC vertexBufferDesc;
-		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTexture) * vertices.size();
+		D3D11_BUFFER_DESC vertexBufferDesc = { 0 };
+		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTexture) * static_cast<uint32_t>(vertices.size());
 		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
-		D3D11_SUBRESOURCE_DATA vertexSubResourceData;
-		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
+		D3D11_SUBRESOURCE_DATA vertexSubResourceData = { 0 };
 		vertexSubResourceData.pSysMem = &vertices[0];
-		if (FAILED(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer)))
-		{
-			throw GameException("ID3D11Device::CreateBuffer() failed.");
-		}
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer), "ID3D11Device::CreateBuffer() failed.");
 	}
 }

@@ -32,7 +32,7 @@ namespace Rendering
 		{
 			DirectX::XMFLOAT4X4 WorldViewProjection;
 
-			CBufferPerObject() : WorldViewProjection() { }
+			CBufferPerObject() { }
 			CBufferPerObject(const DirectX::XMFLOAT4X4& wvp) : WorldViewProjection(wvp) { }
 		};
 
@@ -40,14 +40,14 @@ namespace Rendering
 
 		static const float RotationRate;
 
+		DirectX::XMFLOAT4X4 mWorldMatrix;
+		CBufferPerObject mCBufferPerObject;
 		Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
 		Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
 		Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mConstantBuffer;
-		DirectX::XMFLOAT4X4 mWorldMatrix;
-		CBufferPerObject mCBufferPerObject;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mConstantBuffer;		
 		std::uint32_t mIndexCount;
 		bool mAnimationEnabled;
 	};

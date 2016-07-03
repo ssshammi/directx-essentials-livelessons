@@ -51,7 +51,7 @@ namespace Rendering
 		Mesh* mesh = model.Meshes().at(0).get();
 		CreateVertexBuffer(mGame->Direct3DDevice(), *mesh, &mVertexBuffer);
 		mesh->CreateIndexBuffer(*mGame->Direct3DDevice(), mIndexBuffer.ReleaseAndGetAddressOf());
-		mIndexCount = static_cast<UINT>(mesh->Indices().size());
+		mIndexCount = static_cast<uint32_t>(mesh->Indices().size());
 
 		D3D11_BUFFER_DESC constantBufferDesc = { 0 };
 		constantBufferDesc.ByteWidth = sizeof(CBufferPerObject);
@@ -100,16 +100,16 @@ namespace Rendering
 
 	void ModelDemo::CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const
 	{
-		const std::vector<XMFLOAT3>& sourceVertices = mesh.Vertices();
+		const vector<XMFLOAT3>& sourceVertices = mesh.Vertices();
 
-		std::vector<VertexPositionColor> vertices;
+		vector<VertexPositionColor> vertices;
 		vertices.reserve(sourceVertices.size());
 		if (mesh.VertexColors().size() > 0)
 		{
-			std::vector<XMFLOAT4>* vertexColors = mesh.VertexColors().at(0);
+			vector<XMFLOAT4>* vertexColors = mesh.VertexColors().at(0);
 			assert(vertexColors->size() == sourceVertices.size());
 
-			for (UINT i = 0; i < sourceVertices.size(); i++)
+			for (size_t i = 0; i < sourceVertices.size(); i++)
 			{
 				const XMFLOAT3& position = sourceVertices.at(i);
 				const XMFLOAT4& color = vertexColors->at(i);
@@ -118,7 +118,7 @@ namespace Rendering
 		}
 		else
 		{
-			for (UINT i = 0; i < sourceVertices.size(); i++)
+			for (size_t i = 0; i < sourceVertices.size(); i++)
 			{
 				const XMFLOAT3& position = sourceVertices.at(i);
 				XMFLOAT4 color = ColorHelper::RandomColor();
@@ -127,7 +127,7 @@ namespace Rendering
 		}
 
 		D3D11_BUFFER_DESC vertexBufferDesc = { 0 };
-		vertexBufferDesc.ByteWidth = sizeof(VertexPositionColor) * static_cast<UINT>(vertices.size());
+		vertexBufferDesc.ByteWidth = sizeof(VertexPositionColor) * static_cast<uint32_t>(vertices.size());
 		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
