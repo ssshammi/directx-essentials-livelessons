@@ -26,10 +26,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Content\Shaders\FilteringModesDemoPS.hlsl">
+    <FxCompile Include="Content\Shaders\FilteringModesDemoVS.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Content\Shaders\FilteringModesDemoVS.hlsl">
+    <FxCompile Include="Content\Shaders\FilteringModesDemoPS.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

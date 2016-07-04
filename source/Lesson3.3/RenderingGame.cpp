@@ -9,7 +9,7 @@ namespace Rendering
 	const XMVECTORF32 RenderingGame::BackgroundColor = Colors::CornflowerBlue;
 
 	RenderingGame::RenderingGame(std::function<void*()> getWindowCallback, std::function<void(SIZE&)> getRenderTargetSizeCallback) :
-		Game(getWindowCallback, getRenderTargetSizeCallback)
+		Game(getWindowCallback, getRenderTargetSizeCallback), mRenderStateHelper(*this)
 	{
 	}
 
@@ -39,7 +39,6 @@ namespace Rendering
 
 		Game::Initialize();
 
-		mRenderStateHelper = make_unique<RenderStateHelper>(*this);
 		mFpsComponent = make_shared<FpsComponent>(*this);
 		mFpsComponent->Initialize();
 
@@ -70,9 +69,9 @@ namespace Rendering
 
 		Game::Draw(gameTime);
 
-		mRenderStateHelper->SaveAll();
+		mRenderStateHelper.SaveAll();
 		mFpsComponent->Draw(gameTime);
-		mRenderStateHelper->RestoreAll();
+		mRenderStateHelper.RestoreAll();
 
 		HRESULT hr = mSwapChain->Present(1, 0);
 

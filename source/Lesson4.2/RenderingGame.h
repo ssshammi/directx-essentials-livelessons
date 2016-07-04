@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Game.h"
+#include "RenderStateHelper.h"
 #include <windows.h>
 #include <functional>
 
@@ -8,10 +9,9 @@ namespace Library
 {
 	class KeyboardComponent;
 	class MouseComponent;
-	class GamepadComponent;
+	class GamePadComponent;
 	class FpsComponent;
 	class Camera;
-	class RenderStateHelper;
 	class Grid;
 }
 
@@ -34,12 +34,12 @@ namespace Rendering
 	private:
 		static const DirectX::XMVECTORF32 BackgroundColor;
 
+		Library::RenderStateHelper mRenderStateHelper;
 		std::shared_ptr<Library::KeyboardComponent> mKeyboard;
 		std::shared_ptr<Library::MouseComponent> mMouse;
 		std::shared_ptr<Library::GamePadComponent> mGamePad;
 		std::shared_ptr<Library::FpsComponent> mFpsComponent;
 		std::shared_ptr<Library::Camera> mCamera;
-		std::unique_ptr<Library::RenderStateHelper> mRenderStateHelper;
 		std::shared_ptr<Library::Grid> mGrid;
 		std::shared_ptr<AddressingModesDemo> mAddressingModesDemo;
 	};

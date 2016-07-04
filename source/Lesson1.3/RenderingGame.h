@@ -8,7 +8,7 @@ namespace Library
 {
 	class KeyboardComponent;
 	class MouseComponent;
-	class GamepadComponent;
+	class GamePadComponent;
 	class FpsComponent;
 }
 

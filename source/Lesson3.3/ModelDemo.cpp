@@ -49,7 +49,7 @@ namespace Rendering
 
 		// Create vertex and index buffers for the model
 		Mesh* mesh = model.Meshes().at(0).get();
-		CreateVertexBuffer(mGame->Direct3DDevice(), *mesh, &mVertexBuffer);
+		CreateVertexBuffer(mGame->Direct3DDevice(), *mesh, mVertexBuffer.ReleaseAndGetAddressOf());
 		mesh->CreateIndexBuffer(*mGame->Direct3DDevice(), mIndexBuffer.ReleaseAndGetAddressOf());
 		mIndexCount = static_cast<uint32_t>(mesh->Indices().size());
 
