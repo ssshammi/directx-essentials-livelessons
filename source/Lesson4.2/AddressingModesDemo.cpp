@@ -78,7 +78,7 @@ namespace Rendering
 		ThrowIfFailed(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName.c_str(), nullptr, mColorTexture.ReleaseAndGetAddressOf()), "CreateWICTextureFromFile() failed.");
 
 		// Create texture samplers
-		for (AddressingMode mode = static_cast<AddressingMode>(0); mode < AddressingMode::End; mode = AddressingMode(static_cast<int>(mode) + 1))
+		for (AddressingMode mode = AddressingMode(0); mode < AddressingMode::End; mode = AddressingMode(static_cast<int>(mode) + 1))
 		{
 			D3D11_SAMPLER_DESC samplerDesc;
 			ZeroMemory(&samplerDesc, sizeof(samplerDesc));
