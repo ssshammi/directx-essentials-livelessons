@@ -71,7 +71,10 @@ namespace Rendering
 
 	void AmbientLightingDemo::Update(const GameTime& gameTime)
 	{
-		UpdateAmbientLight(gameTime);
+		if (mKeyboard != nullptr)
+		{
+			UpdateAmbientLight(gameTime);
+		}
 	}
 
 	void AmbientLightingDemo::Draw(const GameTime& gameTime)
@@ -144,25 +147,24 @@ namespace Rendering
 	void AmbientLightingDemo::UpdateAmbientLight(const GameTime& gameTime)
 	{
 		static float ambientIntensity = mCBufferPerFrameData.AmbientColor.x;
+		
+		assert(mKeyboard != nullptr);
 
-		if (mKeyboard != nullptr)
+		if (mKeyboard->IsKeyDown(Keys::PageUp) && ambientIntensity < 1.0f)
 		{
-			if (mKeyboard->IsKeyDown(Keys::PageUp) && ambientIntensity < 1.0f)
-			{
-				ambientIntensity += gameTime.ElapsedGameTimeSeconds().count();
-				ambientIntensity = min(ambientIntensity, 1.0f);
+			ambientIntensity += gameTime.ElapsedGameTimeSeconds().count();
+			ambientIntensity = min(ambientIntensity, 1.0f);
 
-				mCBufferPerFrameData.AmbientColor = XMFLOAT4(ambientIntensity, ambientIntensity, ambientIntensity, 1.0f);
-				mGame->Direct3DDeviceContext()->UpdateSubresource(mCBufferPerFrame.Get(), 0, nullptr, &mCBufferPerFrameData, 0, 0);
-			}
-			else if (mKeyboard->IsKeyDown(Keys::PageDown) && ambientIntensity > 0.0f)
-			{
-				ambientIntensity -= gameTime.ElapsedGameTimeSeconds().count();
-				ambientIntensity = max(ambientIntensity, 0.0f);
+			mCBufferPerFrameData.AmbientColor = XMFLOAT4(ambientIntensity, ambientIntensity, ambientIntensity, 1.0f);
+			mGame->Direct3DDeviceContext()->UpdateSubresource(mCBufferPerFrame.Get(), 0, nullptr, &mCBufferPerFrameData, 0, 0);
+		}
+		else if (mKeyboard->IsKeyDown(Keys::PageDown) && ambientIntensity > 0.0f)
+		{
+			ambientIntensity -= gameTime.ElapsedGameTimeSeconds().count();
+			ambientIntensity = max(ambientIntensity, 0.0f);
 
-				mCBufferPerFrameData.AmbientColor = XMFLOAT4(ambientIntensity, ambientIntensity, ambientIntensity, 1.0f);
-				mGame->Direct3DDeviceContext()->UpdateSubresource(mCBufferPerFrame.Get(), 0, nullptr, &mCBufferPerFrameData, 0, 0);
-			}
+			mCBufferPerFrameData.AmbientColor = XMFLOAT4(ambientIntensity, ambientIntensity, ambientIntensity, 1.0f);
+			mGame->Direct3DDeviceContext()->UpdateSubresource(mCBufferPerFrame.Get(), 0, nullptr, &mCBufferPerFrameData, 0, 0);
 		}
 	}
 }

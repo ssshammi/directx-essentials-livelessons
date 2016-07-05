@@ -1,6 +1,6 @@
 cbuffer CBufferPerFrame
 {
-	float4 AmbientColor;
+	float3 AmbientColor;
 }
 
 Texture2D ColorTexture;
@@ -17,7 +17,7 @@ float4 main(VS_OUTPUT IN) : SV_TARGET
 	float4 OUT = (float4)0;
 
 	OUT = ColorTexture.Sample(ColorSampler, IN.TextureCoordinate);
-	OUT.rgb *= AmbientColor.rgb;
+	OUT.rgb *= AmbientColor;
 
 	return OUT;
 }

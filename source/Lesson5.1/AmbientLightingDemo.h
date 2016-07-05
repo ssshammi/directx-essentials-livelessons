@@ -2,6 +2,7 @@
 
 #include "DrawableGameComponent.h"
 #include "RenderStateHelper.h"
+#include <DirectXMath.h>
 
 namespace Library
 {
@@ -17,7 +18,7 @@ namespace DirectX
 
 namespace Rendering
 {
-	class AmbientLightingDemo : public Library::DrawableGameComponent
+	class AmbientLightingDemo final : public Library::DrawableGameComponent
 	{
 		RTTI_DECLARATIONS(AmbientLightingDemo, DrawableGameComponent)
 

@@ -10,7 +10,7 @@ namespace Library
 
 namespace Rendering
 {
-	class AddressingModesDemo : public Library::DrawableGameComponent
+	class AddressingModesDemo final : public Library::DrawableGameComponent
 	{
 		RTTI_DECLARATIONS(AddressingModesDemo, Library::DrawableGameComponent)
 

@@ -14,7 +14,7 @@ namespace Library
 
 namespace Rendering
 {
-	class CubeDemo : public Library::DrawableGameComponent
+	class CubeDemo final : public Library::DrawableGameComponent
 	{
 	public:
 		CubeDemo(Library::Game& game, const std::shared_ptr<Library::Camera>& camera);

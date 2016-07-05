@@ -15,7 +15,7 @@ namespace Library
 
 namespace Rendering
 {
-	class TexturedModelDemo : public Library::DrawableGameComponent
+	class TexturedModelDemo final : public Library::DrawableGameComponent
 	{
 	public:
 		TexturedModelDemo(Library::Game& game, const std::shared_ptr<Library::Camera>& camera);
