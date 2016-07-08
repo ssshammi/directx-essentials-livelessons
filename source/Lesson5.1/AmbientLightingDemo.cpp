@@ -110,8 +110,10 @@ namespace Rendering
 		// Draw help text
 		mRenderStateHelper.SaveAll();
 		mSpriteBatch->Begin();
+
 		wostringstream helpLabel;
 		helpLabel << "Ambient Intensity (+PgUp/-PgDn): " <<mCBufferPerFrameData.AmbientColor.x;
+
 		mSpriteFont->DrawString(mSpriteBatch.get(), helpLabel.str().c_str(), mTextPosition);
 		mSpriteBatch->End();
 		mRenderStateHelper.RestoreAll();

@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Content\Fonts\Arial_14_Regular.spritefont" />
+    <None Include="packages.config" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8F60BA9C-AAB6-47E4-BD36-DCDEBF4D9AE6}</ProjectGuid>

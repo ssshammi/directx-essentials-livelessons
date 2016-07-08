@@ -6,8 +6,8 @@ cbuffer CBufferPerFrame
 
 cbuffer CBufferPerObject
 {
-	float4x4 WorldViewProjection : WORLDVIEWPROJECTION;
-	float4x4 World : WORLD;
+	float4x4 WorldViewProjection;
+	float4x4 World;
 }
 
 struct VS_INPUT
@@ -21,9 +21,9 @@ struct VS_OUTPUT
 {
 	float4 Position: SV_Position;
 	float3 WorldPosition : WORLDPOS;
+	float Attenuation : ATTENUATION;
 	float2 TextureCoordinate : TEXCOORD;
 	float3 Normal : NORMAL;	
-	float Attenuation : ATTENUATION;
 };
 
 VS_OUTPUT main(VS_INPUT IN)

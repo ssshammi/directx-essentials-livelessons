@@ -13,8 +13,8 @@ namespace Rendering
 	const float BlinnPhongDemo::LightModulationRate = UCHAR_MAX;
 
 	BlinnPhongDemo::BlinnPhongDemo(Game & game, const shared_ptr<Camera>& camera) :
-		DrawableGameComponent(game, camera), mWorldMatrix(MatrixHelper::Identity), mIndexCount(0),
-		mAnimationEnabled(false), mRenderStateHelper(game), mTextPosition(0.0f, 40.0f)
+		DrawableGameComponent(game, camera), mWorldMatrix(MatrixHelper::Identity), mDirectionalLight(game),
+		mRenderStateHelper(game), mIndexCount(0), mTextPosition(0.0f, 40.0f), mAnimationEnabled(false)
 	{
 	}
 
@@ -86,9 +86,8 @@ namespace Rendering
 		mProxyModel->Initialize();
 		mProxyModel->SetPosition(10.0f, 0.0, 0.0f);
 		mProxyModel->ApplyRotation(XMMatrixRotationY(XM_PIDIV2));
-
-		mDirectionalLight = make_unique<DirectionalLight>(*mGame);
-		mPSCBufferPerFrameData.LightDirection = mDirectionalLight->DirectionToLight();
+		
+		mPSCBufferPerFrameData.LightDirection = mDirectionalLight.DirectionToLight();
 
 		// Update the pixel shader constant buffers
 		mGame->Direct3DDeviceContext()->UpdateSubresource(mPSCBufferPerObject.Get(), 0, nullptr, &mPSCBufferPerObjectData, 0, 0);
@@ -157,23 +156,21 @@ namespace Rendering
 
 		mProxyModel->Draw(gameTime);
 
+		// Draw help text
 		mRenderStateHelper.SaveAll();
-
 		mSpriteBatch->Begin();
 
 		wostringstream helpLabel;
-
 		helpLabel << "Ambient Intensity (+PgUp/-PgDn): " << mPSCBufferPerFrameData.AmbientColor.x << "\n";
 		helpLabel << L"Specular Intensity (+Insert/-Delete): " << mPSCBufferPerObjectData.SpecularColor.x << "\n";
 		helpLabel << L"Specular Power (+O/-P): " << mPSCBufferPerObjectData.SpecularPower << "\n";
 		helpLabel << L"Directional Light Intensity (+Home/-End): " << mPSCBufferPerFrameData.LightColor.x << "\n";
 		helpLabel << L"Rotate Directional Light (Arrow Keys)" << "\n";
-		helpLabel << L"Toggle Grid (G)";
+		helpLabel << L"Toggle Grid (G)" << "\n";
+		helpLabel << L"Toggle Animation (Space)" << "\n";
 	
 		mSpriteFont->DrawString(mSpriteBatch.get(), helpLabel.str().c_str(), mTextPosition);
-
 		mSpriteBatch->End();
-
 		mRenderStateHelper.RestoreAll();
 	}
 
@@ -248,7 +245,7 @@ namespace Rendering
 			directionalIntensity = min(directionalIntensity, 1.0f);
 
 			mPSCBufferPerFrameData.LightColor = XMFLOAT4(directionalIntensity, directionalIntensity, directionalIntensity, 1.0f);
-			mDirectionalLight->SetColor(mPSCBufferPerFrameData.LightColor);
+			mDirectionalLight.SetColor(mPSCBufferPerFrameData.LightColor);
 			updateCBuffer = true;
 		}
 		else if (mKeyboard->IsKeyDown(Keys::End) && directionalIntensity > 0.0f)
@@ -257,7 +254,7 @@ namespace Rendering
 			directionalIntensity = max(directionalIntensity, 0.0f);
 
 			mPSCBufferPerFrameData.LightColor = XMFLOAT4(directionalIntensity, directionalIntensity, directionalIntensity, 1.0f);
-			mDirectionalLight->SetColor(mPSCBufferPerFrameData.LightColor);
+			mDirectionalLight.SetColor(mPSCBufferPerFrameData.LightColor);
 			updateCBuffer = true;
 		}
 
@@ -288,14 +285,14 @@ namespace Rendering
 
 		if (rotationAmount.y != 0)
 		{
-			lightRotationMatrix *= XMMatrixRotationAxis(mDirectionalLight->RightVector(), rotationAmount.y);
+			lightRotationMatrix *= XMMatrixRotationAxis(mDirectionalLight.RightVector(), rotationAmount.y);
 		}
 
 		if (rotationAmount.x != 0.0f || rotationAmount.y != 0.0f)
 		{
-			mDirectionalLight->ApplyRotation(lightRotationMatrix);
+			mDirectionalLight.ApplyRotation(lightRotationMatrix);
 			mProxyModel->ApplyRotation(lightRotationMatrix);
-			mPSCBufferPerFrameData.LightDirection = mDirectionalLight->DirectionToLight();
+			mPSCBufferPerFrameData.LightDirection = mDirectionalLight.DirectionToLight();
 			updateCBuffer = true;
 		}
 

@@ -22,4 +22,9 @@ namespace Library
 	{
 		return (normalize ? XMFLOAT4(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f) : XMFLOAT4(color.r, color.g, color.b, color.a));
 	}
+
+	XMFLOAT3 ColorHelper::ToFloat3(const XMCOLOR& color, bool normalize)
+	{
+		return (normalize ? XMFLOAT3(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f) : XMFLOAT3(color.r, color.g, color.b));
+	}
 }

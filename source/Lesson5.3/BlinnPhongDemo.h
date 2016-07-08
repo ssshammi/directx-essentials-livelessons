@@ -2,13 +2,13 @@
 
 #include "DrawableGameComponent.h"
 #include "RenderStateHelper.h"
+#include "DirectionalLight.h"
 #include <DirectXMath.h>
 #include <DirectXColors.h>
 
 namespace Library
 {
 	class Mesh;
-	class DirectionalLight;
 	class ProxyModel;
 	class KeyboardComponent;
 }
@@ -82,6 +82,8 @@ namespace Rendering
 		VSCBufferPerObject mVSCBufferPerObjectData;
 		PSCBufferPerFrame mPSCBufferPerFrameData;
 		PSCBufferPerObject mPSCBufferPerObjectData;
+		Library::DirectionalLight mDirectionalLight;
+		Library::RenderStateHelper mRenderStateHelper;
 		Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
 		Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
 		Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
@@ -90,12 +92,10 @@ namespace Rendering
 		Microsoft::WRL::ComPtr<ID3D11Buffer> mVSCBufferPerObject;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> mPSCBufferPerFrame;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> mPSCBufferPerObject;		
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mColorAndSpecularMap;
-		std::unique_ptr<Library::DirectionalLight> mDirectionalLight;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mColorAndSpecularMap;		
 		std::unique_ptr<Library::ProxyModel> mProxyModel;
 		Library::KeyboardComponent* mKeyboard;
-		std::uint32_t mIndexCount;
-		Library::RenderStateHelper mRenderStateHelper;
+		std::uint32_t mIndexCount;		
 		std::unique_ptr<DirectX::SpriteBatch> mSpriteBatch;
 		std::unique_ptr<DirectX::SpriteFont> mSpriteFont;
 		DirectX::XMFLOAT2 mTextPosition;

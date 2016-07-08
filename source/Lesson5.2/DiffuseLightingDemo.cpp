@@ -146,21 +146,19 @@ namespace Rendering
 
 		mProxyModel->Draw(gameTime);
 
+		// Draw help text
 		mRenderStateHelper.SaveAll();
-
 		mSpriteBatch->Begin();
-
+		
 		wostringstream helpLabel;
-
 		helpLabel << "Ambient Intensity (+PgUp/-PgDn): " << mPixelCBufferPerFrameData.AmbientColor.x << "\n";
 		helpLabel << L"Directional Light Intensity (+Home/-End): " << mPixelCBufferPerFrameData.LightColor.x << "\n";
 		helpLabel << L"Rotate Directional Light (Arrow Keys)" << "\n";
-		helpLabel << L"Toggle Grid (G)";
+		helpLabel << L"Toggle Grid (G)" << "\n";
+		helpLabel << L"Toggle Animation (Space)" << "\n";
 	
 		mSpriteFont->DrawString(mSpriteBatch.get(), helpLabel.str().c_str(), mTextPosition);
-
 		mSpriteBatch->End();
-
 		mRenderStateHelper.RestoreAll();
 	}
 

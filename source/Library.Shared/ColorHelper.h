@@ -11,6 +11,7 @@ namespace Library
 	public:
 		static DirectX::XMFLOAT4 RandomColor();
 		static DirectX::XMFLOAT4 ToFloat4(const DirectX::PackedVector::XMCOLOR& color, bool normalize = false);
+		static DirectX::XMFLOAT3 ToFloat3(const DirectX::PackedVector::XMCOLOR& color, bool normalize = false);
 
 		ColorHelper() = delete;
 		ColorHelper(const ColorHelper&) = delete;
