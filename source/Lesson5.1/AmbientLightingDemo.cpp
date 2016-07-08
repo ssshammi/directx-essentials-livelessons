@@ -41,7 +41,7 @@ namespace Rendering
 
 		// Create vertex and index buffers for the model
 		Mesh* mesh = model.Meshes().at(0).get();
-		CreateVertexBuffer(mGame->Direct3DDevice(), *mesh, mVertexBuffer.ReleaseAndGetAddressOf());
+		CreateVertexBuffer(*mesh, mVertexBuffer.ReleaseAndGetAddressOf());
 		mesh->CreateIndexBuffer(*mGame->Direct3DDevice(), mIndexBuffer.ReleaseAndGetAddressOf());
 		mIndexCount = static_cast<uint32_t>(mesh->Indices().size());
 
@@ -117,14 +117,14 @@ namespace Rendering
 		mRenderStateHelper.RestoreAll();
 	}
 
-	void AmbientLightingDemo::CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const
+	void AmbientLightingDemo::CreateVertexBuffer(const Mesh& mesh, ID3D11Buffer** vertexBuffer) const
 	{
-		const std::vector<XMFLOAT3>& sourceVertices = mesh.Vertices();
+		const vector<XMFLOAT3>& sourceVertices = mesh.Vertices();
 
-		std::vector<VertexPositionTexture> vertices;
+		vector<VertexPositionTexture> vertices;
 		vertices.reserve(sourceVertices.size());
 
-		std::vector<XMFLOAT3>* textureCoordinates = mesh.TextureCoordinates().at(0);
+		vector<XMFLOAT3>* textureCoordinates = mesh.TextureCoordinates().at(0);
 		assert(textureCoordinates->size() == sourceVertices.size());
 
 		for (UINT i = 0; i < sourceVertices.size(); i++)
@@ -141,7 +141,7 @@ namespace Rendering
 
 		D3D11_SUBRESOURCE_DATA vertexSubResourceData = { 0 };
 		vertexSubResourceData.pSysMem = &vertices[0];
-		ThrowIfFailed(device->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer), "ID3D11Device::CreateBuffer() failed.");
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer), "ID3D11Device::CreateBuffer() failed.");
 	}
 
 	void AmbientLightingDemo::UpdateAmbientLight(const GameTime& gameTime)

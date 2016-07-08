@@ -46,7 +46,7 @@ namespace Rendering
 			CBufferPerFrame(const DirectX::XMFLOAT4& ambientColor) : AmbientColor(ambientColor) { }
 		};
 
-		void CreateVertexBuffer(ID3D11Device* device, const Library::Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
+		void CreateVertexBuffer(const Library::Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
 		void UpdateAmbientLight(const Library::GameTime& gameTime);
 
 		DirectX::XMFLOAT4X4 mWorldMatrix;

@@ -55,7 +55,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR command
 
 			// Game-specific code
 
-			ThrowIfFailed(mSwapChain->Present(0, 0), "IDXGISwapChain::Present() failed.");
+			ThrowIfFailed(mSwapChain->Present(1, 0), "IDXGISwapChain::Present() failed.");
 		}
 	}
 
@@ -174,7 +174,7 @@ void InitializeDirectX()
 	swapChainDesc.SampleDesc.Count = multiSamplingCount;
 	swapChainDesc.SampleDesc.Quality = multiSamplingQualityLevels - 1;
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.BufferCount = 1;
+	swapChainDesc.BufferCount = 2;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
 	ComPtr<IDXGIDevice3> dxgiDevice;

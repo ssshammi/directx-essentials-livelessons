@@ -2,15 +2,15 @@
 
 #include "DrawableGameComponent.h"
 #include "RenderStateHelper.h"
-
-using namespace Library;
+#include <DirectXMath.h>
+#include <DirectXColors.h>
 
 namespace Library
 {
 	class Mesh;
 	class DirectionalLight;
-	class Keyboard;
 	class ProxyModel;
+	class KeyboardComponent;
 }
 
 namespace DirectX
@@ -21,102 +21,84 @@ namespace DirectX
 
 namespace Rendering
 {
-	class BlinnPhongDemo : public DrawableGameComponent
+	class BlinnPhongDemo final : public Library::DrawableGameComponent
 	{
-		RTTI_DECLARATIONS(BlinnPhongDemo, DrawableGameComponent)
+		RTTI_DECLARATIONS(BlinnPhongDemo, Library::DrawableGameComponent)
 
 	public:
-		BlinnPhongDemo(Game& game, Camera& camera);
-		~BlinnPhongDemo();
+		BlinnPhongDemo(Library::Game& game, const std::shared_ptr<Library::Camera>& camera);
 
-		BlinnPhongDemo() = delete;
-		BlinnPhongDemo(const BlinnPhongDemo& rhs) = delete;
-		BlinnPhongDemo& operator=(const BlinnPhongDemo& rhs) = delete;
+		bool AnimationEnabled() const;
+		void SetAnimationEnabled(bool enabled);
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-		virtual void Draw(const GameTime& gameTime) override;
+		virtual void Update(const Library::GameTime& gameTime) override;
+		virtual void Draw(const Library::GameTime& gameTime) override;
 
 	private:
-		struct VertexCBufferPerObject
+		struct VSCBufferPerObject
 		{
-			XMFLOAT4X4 WorldViewProjection;
-			XMFLOAT4X4 World;
-			
-			VertexCBufferPerObject() : WorldViewProjection(), World() { }
+			DirectX::XMFLOAT4X4 WorldViewProjection;
+			DirectX::XMFLOAT4X4 World;
 
-			VertexCBufferPerObject(const XMFLOAT4X4& wvp, const XMFLOAT4X4& world) : WorldViewProjection(wvp), World(world) { }
+			VSCBufferPerObject() { }
+			VSCBufferPerObject(const DirectX::XMFLOAT4X4& wvp, const DirectX::XMFLOAT4X4& world) :
+				WorldViewProjection(wvp), World(world) { }
 		};
 
-		struct VertexCBufferPerFrame
+		struct PSCBufferPerFrame
 		{
-			XMFLOAT4 LightDirection;
-			XMFLOAT4 CameraPosition;
+			DirectX::XMFLOAT3 CameraPosition;
+			float Padding;
+			DirectX::XMFLOAT4 AmbientColor;
+			DirectX::XMFLOAT3 LightDirection;
+			float Padding2;
+			DirectX::XMFLOAT4 LightColor;
 
-			VertexCBufferPerFrame() : LightDirection(0.0f, 0.0f, -1.0f, 0.0f), CameraPosition(0.0f, 0.0f, 0.0f, 1.0f) { }
-
-			VertexCBufferPerFrame(const XMFLOAT4& lightDirection, const XMFLOAT4& cameraPosition)
-				: LightDirection(lightDirection), CameraPosition(cameraPosition)
-			{
-			}
+			PSCBufferPerFrame() :
+				AmbientColor(DirectX::Colors::Black), LightDirection(0.0f, 0.0f, 1.0f), LightColor(DirectX::Colors::White) { }
 		};
 
-		struct PixelCBufferPerObject
+		struct PSCBufferPerObject
 		{
-			XMFLOAT3 SpecularColor;
+			DirectX::XMFLOAT3 SpecularColor;
 			float SpecularPower;
 
-			PixelCBufferPerObject() : SpecularColor(1.0f, 1.0f, 1.0f), SpecularPower(25.0f) { }
-
-			PixelCBufferPerObject(const XMFLOAT3& specularColor, float specularPower)
-				: SpecularColor(specularColor), SpecularPower(specularPower)
-			{
-			}
+			PSCBufferPerObject() :
+				SpecularColor(1.0f, 1.0f, 1.0f), SpecularPower(128.0f) { }
 		};
 
-		struct PixelCBufferPerFrame
-		{
-			XMFLOAT4 AmbientColor;
-			XMFLOAT4 LightColor;
+		void CreateVertexBuffer(const Library::Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
+		void ToggleAnimation();
+		void UpdateAmbientLight(const Library::GameTime& gameTime);
+		void UpdateDirectionalLight(const Library::GameTime& gameTime);
+		void UpdateSpecularLight(const Library::GameTime& gameTime);
 
-			PixelCBufferPerFrame() : AmbientColor(0.0f, 0.0f, 0.0f, 0.0f), LightColor(1.0f, 1.0f, 1.0f, 1.0f) { }
-
-			PixelCBufferPerFrame(const XMFLOAT4& ambientColor, const XMFLOAT4& lightColor) : AmbientColor(ambientColor), LightColor(lightColor) { }
-		};
-
-		void CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
-		void UpdateAmbientLight(const GameTime& gameTime);
-		void UpdateDirectionalLight(const GameTime& gameTime);
-		void UpdateSpecularLight(const GameTime& gameTime);
-
-		static const XMFLOAT2 LightRotationRate;
+		static const float ModelRotationRate;
+		static const DirectX::XMFLOAT2 LightRotationRate;
 		static const float LightModulationRate;
 
-		ID3D11VertexShader* mVertexShader;		
-		ID3D11PixelShader* mPixelShader;
-		ID3D11InputLayout* mInputLayout;
-		ID3D11Buffer* mVertexBuffer;
-		ID3D11Buffer* mIndexBuffer;
-		ID3D11Buffer* mVertexCBufferPerObject;
-		VertexCBufferPerObject mVertexCBufferPerObjectData;
-		ID3D11Buffer* mVertexCBufferPerFrame;		
-		VertexCBufferPerFrame mVertexCBufferPerFrameData;
-		ID3D11Buffer* mPixelCBufferPerObject;
-		PixelCBufferPerObject mPixelCBufferPerObjectData;
-		ID3D11Buffer* mPixelCBufferPerFrame;
-		PixelCBufferPerFrame mPixelCBufferPerFrameData;
-		UINT mIndexCount;
-		ID3D11ShaderResourceView* mColorTexture;
-		ID3D11SamplerState* mColorSampler;
-		XMFLOAT4X4 mWorldMatrix;
-		std::unique_ptr<DirectionalLight> mDirectionalLight;
-
-		RenderStateHelper mRenderStateHelper;
-		std::unique_ptr<SpriteBatch> mSpriteBatch;
-		std::unique_ptr<SpriteFont> mSpriteFont;
-		XMFLOAT2 mTextPosition;
-
-		Keyboard* mKeyboard;
-		std::unique_ptr<ProxyModel> mProxyModel;
+		DirectX::XMFLOAT4X4 mWorldMatrix;
+		VSCBufferPerObject mVSCBufferPerObjectData;
+		PSCBufferPerFrame mPSCBufferPerFrameData;
+		PSCBufferPerObject mPSCBufferPerObjectData;
+		Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
+		Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mVSCBufferPerObject;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mPSCBufferPerFrame;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mPSCBufferPerObject;		
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mColorAndSpecularMap;
+		std::unique_ptr<Library::DirectionalLight> mDirectionalLight;
+		std::unique_ptr<Library::ProxyModel> mProxyModel;
+		Library::KeyboardComponent* mKeyboard;
+		std::uint32_t mIndexCount;
+		Library::RenderStateHelper mRenderStateHelper;
+		std::unique_ptr<DirectX::SpriteBatch> mSpriteBatch;
+		std::unique_ptr<DirectX::SpriteFont> mSpriteFont;
+		DirectX::XMFLOAT2 mTextPosition;
+		bool mAnimationEnabled;
 	};
 }

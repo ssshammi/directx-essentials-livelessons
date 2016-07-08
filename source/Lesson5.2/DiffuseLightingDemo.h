@@ -58,7 +58,7 @@ namespace Rendering
 				AmbientColor(ambientColor), LightDirection(lightDirection), LightColor(lightColor) { }
 		};
 
-		void CreateVertexBuffer(ID3D11Device* device, const Library::Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
+		void CreateVertexBuffer(const Library::Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
 		void ToggleAnimation();
 		void UpdateAmbientLight(const Library::GameTime& gameTime);
 		void UpdateDirectionalLight(const Library::GameTime& gameTime);
