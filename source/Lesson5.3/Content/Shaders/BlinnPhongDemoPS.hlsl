@@ -25,10 +25,11 @@ struct VS_OUTPUT
 
 float4 main(VS_OUTPUT IN) : SV_TARGET
 {
+	float3 normal = normalize(IN.Normal);
 	float3 viewDirection = normalize(CameraPosition - IN.WorldPosition);
-	float n_dot_l = dot(LightDirection, IN.Normal);
+	float n_dot_l = dot(LightDirection, normal);
 	float3 halfVector = normalize(LightDirection + viewDirection);
-	float n_dot_h = dot(IN.Normal, halfVector);
+	float n_dot_h = dot(normal, halfVector);
 
 	float4 color = ColorAndSpecularMap.Sample(TextureSampler, IN.TextureCoordinates);
 	float2 lightCoefficients = lit(n_dot_l, n_dot_h, SpecularPower).yz;
@@ -37,5 +38,5 @@ float4 main(VS_OUTPUT IN) : SV_TARGET
 	float3 diffuse = color.rgb * lightCoefficients.x * LightColor;
 	float3 specular = min(lightCoefficients.y, color.w) * SpecularColor;
 
-	return float4(saturate(ambient + diffuse + specular), 1.0f);
+	return float4(saturate(ambient + diffuse + specular), color.a);
 }
