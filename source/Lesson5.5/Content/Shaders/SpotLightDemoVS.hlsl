@@ -1,14 +1,13 @@
 cbuffer CBufferPerFrame
 {
 	float3 LightPosition;
-	float LightRadius;
-	float3 LightLookAt;
+	float LightRadius;	
 }
 
 cbuffer CBufferPerObject
 {
-	float4x4 WorldViewProjection : WORLDVIEWPROJECTION;
-	float4x4 World : WORLD;
+	float4x4 WorldViewProjection;
+	float4x4 World;
 }
 
 struct VS_INPUT
@@ -22,10 +21,9 @@ struct VS_OUTPUT
 {
 	float4 Position: SV_Position;
 	float3 WorldPosition : WORLDPOS;
+	float Attenuation : ATTENUATION;
 	float2 TextureCoordinate : TEXCOORD;
 	float3 Normal : NORMAL;	
-	float Attenuation : ATTENUATION;	
-	float3 LightLookAt : LOOKAT;
 };
 
 VS_OUTPUT main(VS_INPUT IN)
@@ -39,8 +37,6 @@ VS_OUTPUT main(VS_INPUT IN)
 
 	float3 lightDirection = LightPosition - OUT.WorldPosition;
 	OUT.Attenuation = saturate(1.0f - length(lightDirection) / LightRadius);
-
-	OUT.LightLookAt = -LightLookAt;
 
 	return OUT;
 }

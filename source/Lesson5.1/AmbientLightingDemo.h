@@ -34,7 +34,7 @@ namespace Rendering
 		{
 			DirectX::XMFLOAT4X4 WorldViewProjection;
 
-			CBufferPerObject() { }
+			CBufferPerObject() = default;
 			CBufferPerObject(const DirectX::XMFLOAT4X4& wvp) : WorldViewProjection(wvp) { }
 		};
 

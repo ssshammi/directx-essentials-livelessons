@@ -178,7 +178,7 @@ IF EXIST "$(ProjectDir)content" xcopy /E /Y "$(ProjectDir)Content" "$(OutDir)Con
     </PreBuildEvent>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
-      <ObjectFileOutput>$(OutDir)Content\Effects\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput>$(OutDir)Content\Shaders\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
     <PostBuildEvent>
       <Command>
@@ -213,7 +213,7 @@ IF EXIST "$(ProjectDir)content" xcopy /E /Y "$(ProjectDir)Content" "$(OutDir)Con
     </PreBuildEvent>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
-      <ObjectFileOutput>$(OutDir)Content\Effects\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput>$(OutDir)Content\Shaders\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
     <PostBuildEvent>
       <Command>

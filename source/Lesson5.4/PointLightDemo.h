@@ -2,13 +2,13 @@
 
 #include "DrawableGameComponent.h"
 #include "RenderStateHelper.h"
+#include "PointLight.h"
 #include <DirectXMath.h>
 #include <DirectXColors.h>
 
 namespace Library
 {
 	class Mesh;
-	class PointLight;
 	class ProxyModel;
 	class KeyboardComponent;	
 }
@@ -21,7 +21,7 @@ namespace DirectX
 
 namespace Rendering
 {
-	class PointLightDemo : public Library::DrawableGameComponent
+	class PointLightDemo final : public Library::DrawableGameComponent
 	{
 		RTTI_DECLARATIONS(PointLightDemo, Library::DrawableGameComponent)
 
@@ -52,7 +52,7 @@ namespace Rendering
 			DirectX::XMFLOAT4X4 WorldViewProjection;
 			DirectX::XMFLOAT4X4 World;
 
-			VSCBufferPerObject() { }
+			VSCBufferPerObject() = default;
 			VSCBufferPerObject(const DirectX::XMFLOAT4X4& wvp, const DirectX::XMFLOAT4X4& world) :
 				WorldViewProjection(wvp), World(world) { }
 		};

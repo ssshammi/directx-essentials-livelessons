@@ -41,7 +41,7 @@ namespace Rendering
 			DirectX::XMFLOAT4X4 WorldViewProjection;
 			DirectX::XMFLOAT4X4 World;
 
-			VSCBufferPerObject() { }
+			VSCBufferPerObject() = default;
 			VSCBufferPerObject(const DirectX::XMFLOAT4X4& wvp, const DirectX::XMFLOAT4X4& world) :
 				WorldViewProjection(wvp), World(world) { }
 		};

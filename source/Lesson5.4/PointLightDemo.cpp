@@ -86,7 +86,6 @@ namespace Rendering
 		mSpriteFont = make_unique<SpriteFont>(mGame->Direct3DDevice(), L"Content\\Fonts\\Arial_14_Regular.spritefont");
 
 		// Retrieve the keyboard service
-		// Retrieve the keyboard service
 		mKeyboard = reinterpret_cast<KeyboardComponent*>(mGame->Services().GetService(KeyboardComponent::TypeIdClass()));
 		
 		// Setup the point light
@@ -247,7 +246,7 @@ namespace Rendering
 
 	void PointLightDemo::UpdatePointLight(const GameTime& gameTime)
 	{
-		static float directionalIntensity = mPSCBufferPerFrameData.LightColor.x;
+		static float lightIntensity = mPSCBufferPerFrameData.LightColor.x;
 
 		assert(mKeyboard != nullptr);
 
@@ -255,21 +254,21 @@ namespace Rendering
 		bool updateCBuffer = false;
 
 		// Update point light intensity
-		if (mKeyboard->IsKeyDown(Keys::Home) && directionalIntensity < 1.0f)
+		if (mKeyboard->IsKeyDown(Keys::Home) && lightIntensity < 1.0f)
 		{
-			directionalIntensity += elapsedTime;
-			directionalIntensity = min(directionalIntensity, 1.0f);
+			lightIntensity += elapsedTime;
+			lightIntensity = min(lightIntensity, 1.0f);
 
-			mPSCBufferPerFrameData.LightColor = XMFLOAT3(directionalIntensity, directionalIntensity, directionalIntensity);
+			mPSCBufferPerFrameData.LightColor = XMFLOAT3(lightIntensity, lightIntensity, lightIntensity);
 			mPointLight.SetColor(mPSCBufferPerFrameData.LightColor.x, mPSCBufferPerFrameData.LightColor.y, mPSCBufferPerFrameData.LightColor.z, 1.0f);
 			updateCBuffer = true;
 		}
-		else if (mKeyboard->IsKeyDown(Keys::End) && directionalIntensity > 0.0f)
+		else if (mKeyboard->IsKeyDown(Keys::End) && lightIntensity > 0.0f)
 		{
-			directionalIntensity -= elapsedTime;
-			directionalIntensity = max(directionalIntensity, 0.0f);
+			lightIntensity -= elapsedTime;
+			lightIntensity = max(lightIntensity, 0.0f);
 
-			mPSCBufferPerFrameData.LightColor = XMFLOAT3(directionalIntensity, directionalIntensity, directionalIntensity);
+			mPSCBufferPerFrameData.LightColor = XMFLOAT3(lightIntensity, lightIntensity, lightIntensity);
 			mPointLight.SetColor(mPSCBufferPerFrameData.LightColor.x, mPSCBufferPerFrameData.LightColor.y, mPSCBufferPerFrameData.LightColor.z, 1.0f);
 			updateCBuffer = true;
 		}
