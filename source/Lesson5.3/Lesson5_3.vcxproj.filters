@@ -26,14 +26,6 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Content\Shaders\BlinnPhongDemoPS.hlsl">
-      <Filter>Content\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Content\Shaders\BlinnPhongDemoVS.hlsl">
-      <Filter>Content\Shaders</Filter>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
     <Image Include="Content\Textures\Earthatday.dds">
       <Filter>Content\Textures</Filter>
     </Image>
@@ -46,5 +38,13 @@
       <Filter>Content\Models</Filter>
     </None>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Content\Shaders\BlinnPhongDemoVS.hlsl">
+      <Filter>Content\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Content\Shaders\BlinnPhongDemoPS.hlsl">
+      <Filter>Content\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
