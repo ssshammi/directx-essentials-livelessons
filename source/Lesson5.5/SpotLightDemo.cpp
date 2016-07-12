@@ -109,8 +109,6 @@ namespace Rendering
 
 	void SpotLightDemo::Update(const GameTime& gameTime)
 	{
-		static float angle = 0.0f;
-
 		if (mKeyboard != nullptr)
 		{
 			UpdateAmbientLight(gameTime);

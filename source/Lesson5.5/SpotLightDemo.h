@@ -8,7 +8,6 @@
 
 namespace Library
 {	
-	class Mesh;
 	class ProxyModel;
 	class KeyboardComponent;
 	struct VertexPositionTextureNormal;
