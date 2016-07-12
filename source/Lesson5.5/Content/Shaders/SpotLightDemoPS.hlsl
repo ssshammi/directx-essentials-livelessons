@@ -1,7 +1,7 @@
 cbuffer CBufferPerFrame
 {
-	float4 AmbientColor;
-	float4 LightColor;
+	float3 AmbientColor;
+	float3 LightColor;
 	float3 LightPosition;
 	float SpotLightInnerAngle;
 	float SpotLightOuterAngle;

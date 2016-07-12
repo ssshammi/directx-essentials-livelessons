@@ -26,5 +26,5 @@ float4 main(VS_OUTPUT IN) : SV_TARGET
 	float3 ambient = color.rgb * AmbientColor;
 	float3 environment = EnvironmentMap.Sample(TextureSampler, IN.ReflectionVector).rgb * EnvColor;
 
-	return (lerp(ambient, environment, ReflectionAmount), color.a);
+	return (float4(lerp(ambient, environment, ReflectionAmount), color.a));
 }

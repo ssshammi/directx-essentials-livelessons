@@ -37,6 +37,9 @@ namespace Rendering
 		mGrid = make_shared<Grid>(*this, mCamera);
 		mComponents.push_back(mGrid);
 
+		mSkybox = make_shared<Skybox>(*this, mCamera, L"Content\\Textures\\Maskonaive2_1024.dds", 500.0f);
+		mComponents.push_back(mSkybox);
+
 		mEnvironmentMappingDemo = make_shared<EnvironmentMappingDemo>(*this, mCamera);
 		mComponents.push_back(mEnvironmentMappingDemo);
 

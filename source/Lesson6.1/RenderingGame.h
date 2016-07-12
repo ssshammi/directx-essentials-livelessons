@@ -13,6 +13,7 @@ namespace Library
 	class FpsComponent;
 	class Camera;
 	class Grid;
+	class Skybox;
 }
 
 namespace Rendering
@@ -41,6 +42,7 @@ namespace Rendering
 		std::shared_ptr<Library::FpsComponent> mFpsComponent;
 		std::shared_ptr<Library::Camera> mCamera;
 		std::shared_ptr<Library::Grid> mGrid;
+		std::shared_ptr<Library::Skybox> mSkybox;
 		std::shared_ptr<EnvironmentMappingDemo> mEnvironmentMappingDemo;
 	};
 }
