@@ -2,16 +2,15 @@
 
 #include "DrawableGameComponent.h"
 #include "RenderStateHelper.h"
-#include "ColorHelper.h"
-
-using namespace Library;
+#include "DirectionalLight.h"
+#include <DirectXMath.h>
+#include <DirectXColors.h>
 
 namespace Library
 {
 	class Mesh;
-	class DirectionalLight;
-	class Keyboard;
 	class ProxyModel;
+	class KeyboardComponent;
 }
 
 namespace DirectX
@@ -22,124 +21,108 @@ namespace DirectX
 
 namespace Rendering
 {
-	class FogDemo : public DrawableGameComponent
+	class FogDemo : public Library::DrawableGameComponent
 	{
-		RTTI_DECLARATIONS(FogDemo, DrawableGameComponent)
+		RTTI_DECLARATIONS(FogDemo, Library::DrawableGameComponent)
 
 	public:
-		static void* operator new(size_t size);
-		static void operator delete(void *p);
+		FogDemo(Library::Game& game, const std::shared_ptr<Library::Camera>& camera);
 
-		FogDemo(Game& game, Camera& camera);
-		~FogDemo();
-
-		FogDemo() = delete;
-		FogDemo(const FogDemo& rhs) = delete;
-		FogDemo& operator=(const FogDemo& rhs) = delete;
+		bool AnimationEnabled() const;
+		void SetAnimationEnabled(bool enabled);
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-		virtual void Draw(const GameTime& gameTime) override;
+		virtual void Update(const Library::GameTime& gameTime) override;
+		virtual void Draw(const Library::GameTime& gameTime) override;
 
 	private:
-		struct VertexCBufferPerObject
-		{
-			XMFLOAT4X4 WorldViewProjection;
-			XMFLOAT4X4 World;
-			
-			VertexCBufferPerObject() : WorldViewProjection(), World() { }
-
-			VertexCBufferPerObject(const XMFLOAT4X4& wvp, const XMFLOAT4X4& world) : WorldViewProjection(wvp), World(world) { }
-		};
-
-		__declspec(align(16))
-		struct VertexCBufferPerFrame
-		{
-			XMFLOAT4 LightDirection;
-			XMFLOAT4 CameraPosition;
+		struct VSCBufferPerFrame
+		{			
+			DirectX::XMFLOAT3 CameraPosition;
 			float FogStart;
 			float FogRange;
+			DirectX::XMFLOAT3 Padding;
 
-			VertexCBufferPerFrame()
-				: LightDirection(0.0f, 0.0f, -1.0f, 0.0f), CameraPosition(0.0f, 0.0f, 0.0f, 1.0f), FogStart(20.0f), FogRange(40.0f)
-			{
-			}
-
-			VertexCBufferPerFrame(const XMFLOAT4& lightDirection, const XMFLOAT4& cameraPosition, float fogStart, float fogRange)
-				: LightDirection(lightDirection), CameraPosition(cameraPosition), FogStart(fogStart), FogRange(fogRange)
-			{
-			}
+			VSCBufferPerFrame() :
+				CameraPosition(Library::Vector3Helper::Zero), FogStart(30.0f), FogRange(40.0f) { }
+			VSCBufferPerFrame(const DirectX::XMFLOAT3& cameraPosition, float fogStart, float fogRange) :
+				CameraPosition(cameraPosition), FogStart(fogStart), FogRange(fogRange) { }
 		};
 
-		struct PixelCBufferPerObject
+		struct VSCBufferPerObject
 		{
-			XMFLOAT3 SpecularColor;
+			DirectX::XMFLOAT4X4 WorldViewProjection;
+			DirectX::XMFLOAT4X4 World;
+
+			VSCBufferPerObject() = default;
+			VSCBufferPerObject(const DirectX::XMFLOAT4X4& wvp, const DirectX::XMFLOAT4X4& world) :
+				WorldViewProjection(wvp), World(world) { }
+		};
+
+		struct PSCBufferPerFrame
+		{
+			DirectX::XMFLOAT3 CameraPosition;
+			float Padding;
+			DirectX::XMFLOAT4 AmbientColor;
+			DirectX::XMFLOAT3 LightDirection;
+			float Padding2;
+			DirectX::XMFLOAT4 LightColor;
+			DirectX::XMFLOAT4 FogColor;			
+
+			PSCBufferPerFrame() :
+				CameraPosition(Library::Vector3Helper::Zero), AmbientColor(Library::Vector4Helper::Zero), 
+				LightDirection(Library::Vector3Helper::Forward), LightColor(Library::Vector4Helper::One),
+				FogColor(DirectX::Colors::CornflowerBlue) { }
+
+			PSCBufferPerFrame(const DirectX::XMFLOAT3& cameraPosition, const DirectX::XMFLOAT4& ambientColor, const DirectX::XMFLOAT3& lightDirection, const DirectX::XMFLOAT4& lightColor, const DirectX::XMFLOAT4& fogColor ) :
+				CameraPosition(cameraPosition), AmbientColor(ambientColor),
+				LightDirection(lightDirection), LightColor(lightColor),
+				FogColor(fogColor) { }
+		};
+
+		struct PSCBufferPerObject
+		{
+			DirectX::XMFLOAT3 SpecularColor;
 			float SpecularPower;
 
-			PixelCBufferPerObject() : SpecularColor(1.0f, 1.0f, 1.0f), SpecularPower(25.0f) { }
-
-			PixelCBufferPerObject(const XMFLOAT3& specularColor, float specularPower)
-				: SpecularColor(specularColor), SpecularPower(specularPower)
-			{
-			}
+			PSCBufferPerObject() :
+				SpecularColor(1.0f, 1.0f, 1.0f), SpecularPower(128.0f) { }
 		};
 
-		struct PixelCBufferPerFrame
-		{
-			XMFLOAT4 AmbientColor;
-			XMFLOAT4 LightColor;
-			XMFLOAT4 FogColor;
-			XMFLOAT4 CameraPosition;
+		void CreateVertexBuffer(const Library::Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
+		void ToggleAnimation();
+		void UpdateAmbientLight(const Library::GameTime& gameTime);
+		void UpdateDirectionalLight(const Library::GameTime& gameTime);
+		void UpdateSpecularLight(const Library::GameTime& gameTime);
 
-			PixelCBufferPerFrame()
-				: AmbientColor(0.0f, 0.0f, 0.0f, 0.0f), LightColor(1.0f, 1.0f, 1.0f, 1.0f), FogColor(&ColorHelper::CornflowerBlue[0]),
-				  CameraPosition(0.0f, 0.0f, 0.0f, 1.0f)
-			{
-			}
-
-			PixelCBufferPerFrame(const XMFLOAT4& ambientColor, const XMFLOAT4& lightColor, const XMFLOAT4& fogColor, const XMFLOAT4& cameraPosition)
-				: AmbientColor(ambientColor), LightColor(lightColor), FogColor(fogColor), CameraPosition(cameraPosition)
-			{
-			}
-		};
-
-		void CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
-		void UpdateAmbientLight(const GameTime& gameTime);
-		void UpdateDirectionalLight(const GameTime& gameTime);
-		void UpdateSpecularLight(const GameTime& gameTime);
-
-		static const size_t Alignment;
-		static const XMFLOAT2 LightRotationRate;
+		static const float ModelRotationRate;
+		static const DirectX::XMFLOAT2 LightRotationRate;
 		static const float LightModulationRate;
-		static const XMFLOAT4 FogColor;
 
-		ID3D11VertexShader* mVertexShader;		
-		ID3D11PixelShader* mPixelShader;
-		ID3D11InputLayout* mInputLayout;
-		ID3D11Buffer* mVertexBuffer;
-		ID3D11Buffer* mIndexBuffer;
-		ID3D11Buffer* mVertexCBufferPerObject;
-		VertexCBufferPerObject mVertexCBufferPerObjectData;
-		ID3D11Buffer* mVertexCBufferPerFrame;		
-		VertexCBufferPerFrame mVertexCBufferPerFrameData;
-		ID3D11Buffer* mPixelCBufferPerObject;
-		PixelCBufferPerObject mPixelCBufferPerObjectData;
-		ID3D11Buffer* mPixelCBufferPerFrame;
-		PixelCBufferPerFrame mPixelCBufferPerFrameData;
-		UINT mIndexCount;
-		ID3D11ShaderResourceView* mColorTexture;
-		ID3D11SamplerState* mColorSampler;
-		XMFLOAT4X4 mWorldMatrix;
-		std::unique_ptr<DirectionalLight> mDirectionalLight;
-		float mFogStart;
-		float mFogRange;
-
-		RenderStateHelper mRenderStateHelper;
-		std::unique_ptr<SpriteBatch> mSpriteBatch;
-		std::unique_ptr<SpriteFont> mSpriteFont;
-		XMFLOAT2 mTextPosition;
-
-		Keyboard* mKeyboard;
-		std::unique_ptr<ProxyModel> mProxyModel;
+		DirectX::XMFLOAT4X4 mWorldMatrix;
+		VSCBufferPerFrame mVSCBufferPerFrameData;
+		VSCBufferPerObject mVSCBufferPerObjectData;
+		PSCBufferPerFrame mPSCBufferPerFrameData;
+		PSCBufferPerObject mPSCBufferPerObjectData;
+		Library::DirectionalLight mDirectionalLight;
+		Library::RenderStateHelper mRenderStateHelper;
+		Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
+		Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mVSCBufferPerObject;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mVSCBufferPerFrame;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mPSCBufferPerFrame;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mPSCBufferPerObject;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mColorTexture;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mSpecularMap;
+		std::unique_ptr<Library::ProxyModel> mProxyModel;
+		Library::KeyboardComponent* mKeyboard;
+		std::uint32_t mIndexCount;
+		std::unique_ptr<DirectX::SpriteBatch> mSpriteBatch;
+		std::unique_ptr<DirectX::SpriteFont> mSpriteFont;
+		DirectX::XMFLOAT2 mTextPosition;
+		bool mAnimationEnabled;
 	};
 }

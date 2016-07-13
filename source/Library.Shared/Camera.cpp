@@ -82,7 +82,7 @@ namespace Library
 		return XMMatrixMultiply(viewMatrix, projectionMatrix);
 	}
 
-	void Camera::SetPosition(FLOAT x, FLOAT y, FLOAT z)
+	void Camera::SetPosition(float x, float y, float z)
 	{
 		XMVECTOR position = XMVectorSet(x, y, z, 1.0f);
 		SetPosition(position);

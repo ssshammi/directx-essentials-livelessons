@@ -95,7 +95,7 @@ namespace Rendering
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mColorAndSpecularMap;		
 		std::unique_ptr<Library::ProxyModel> mProxyModel;
 		Library::KeyboardComponent* mKeyboard;
-		std::uint32_t mIndexCount;		
+		std::uint32_t mIndexCount;
 		std::unique_ptr<DirectX::SpriteBatch> mSpriteBatch;
 		std::unique_ptr<DirectX::SpriteFont> mSpriteFont;
 		DirectX::XMFLOAT2 mTextPosition;

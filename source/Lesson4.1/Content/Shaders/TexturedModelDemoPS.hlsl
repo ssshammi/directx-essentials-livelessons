@@ -1,5 +1,4 @@
 Texture2D ColorTexture;
-
 SamplerState ColorSampler;
 
 struct VS_OUTPUT

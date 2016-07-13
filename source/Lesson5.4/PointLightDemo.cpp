@@ -79,7 +79,7 @@ namespace Rendering
 		ThrowIfFailed(CreateDDSTextureFromFile(mGame->Direct3DDevice(), textureName.c_str(), nullptr, mColorTexture.ReleaseAndGetAddressOf()), "CreateDDSTextureFromFile() failed.");
 
 		textureName = L"Content\\Textures\\EarthSpecularMap.png";
-		ThrowIfFailed(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), textureName.c_str(), nullptr, mSpecularMap.ReleaseAndGetAddressOf()), "CreateWICTextureFromFile() failed.");
+		ThrowIfFailed(CreateWICTextureFromFile(mGame->Direct3DDevice(), textureName.c_str(), nullptr, mSpecularMap.ReleaseAndGetAddressOf()), "CreateWICTextureFromFile() failed.");
 
 		// Create text rendering helpers
 		mSpriteBatch = make_unique<SpriteBatch>(mGame->Direct3DDeviceContext());
