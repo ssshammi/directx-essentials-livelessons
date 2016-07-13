@@ -21,7 +21,7 @@ namespace DirectX
 
 namespace Rendering
 {
-	class TransparencyMappingDemo : public Library::DrawableGameComponent
+	class TransparencyMappingDemo final : public Library::DrawableGameComponent
 	{
 		RTTI_DECLARATIONS(TransparencyMappingDemo, DrawableGameComponent)
 

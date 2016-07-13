@@ -160,7 +160,6 @@ namespace Rendering
 		mProxyModel->Draw(gameTime);
 
 		// Draw help text
-		mRenderStateHelper.SaveAll();
 		mSpriteBatch->Begin();
 
 		wostringstream helpLabel;

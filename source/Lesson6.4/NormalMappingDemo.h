@@ -2,15 +2,14 @@
 
 #include "DrawableGameComponent.h"
 #include "RenderStateHelper.h"
-#include "ColorHelper.h"
-
-using namespace Library;
+#include "VectorHelper.h"
+#include "DirectionalLight.h"
+#include <DirectXMath.h>
 
 namespace Library
 {
-	class DirectionalLight;
-	class Keyboard;
 	class ProxyModel;
+	class KeyboardComponent;
 	struct VertexPositionTextureNormalTangent;
 }
 
@@ -22,114 +21,87 @@ namespace DirectX
 
 namespace Rendering
 {
-	class NormalMappingDemo : public DrawableGameComponent
+	class NormalMappingDemo final : public Library::DrawableGameComponent
 	{
-		RTTI_DECLARATIONS(NormalMappingDemo, DrawableGameComponent)
+		RTTI_DECLARATIONS(NormalMappingDemo, Library::DrawableGameComponent)
 
 	public:
-		NormalMappingDemo(Game& game, Camera& camera);
-		~NormalMappingDemo();
-
-		NormalMappingDemo() = delete;
-		NormalMappingDemo(const NormalMappingDemo& rhs) = delete;
-		NormalMappingDemo& operator=(const NormalMappingDemo& rhs) = delete;
+		NormalMappingDemo(Library::Game& game, const std::shared_ptr<Library::Camera>& camera);		
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-		virtual void Draw(const GameTime& gameTime) override;
+		virtual void Update(const Library::GameTime& gameTime) override;
+		virtual void Draw(const Library::GameTime& gameTime) override;
 
 	private:
-		struct VertexCBufferPerObject
+		struct VSCBufferPerObject
 		{
-			XMFLOAT4X4 WorldViewProjection;
-			XMFLOAT4X4 World;
-			
-			VertexCBufferPerObject() : WorldViewProjection(), World() { }
+			DirectX::XMFLOAT4X4 WorldViewProjection;
+			DirectX::XMFLOAT4X4 World;
 
-			VertexCBufferPerObject(const XMFLOAT4X4& wvp, const XMFLOAT4X4& world) : WorldViewProjection(wvp), World(world) { }
+			VSCBufferPerObject() = default;
+			VSCBufferPerObject(const DirectX::XMFLOAT4X4& wvp, const DirectX::XMFLOAT4X4& world) :
+				WorldViewProjection(wvp), World(world) { }
 		};
 
-		struct VertexCBufferPerFrame
+		struct PSCBufferPerFrame
 		{
-			XMFLOAT4 LightDirection;
+			DirectX::XMFLOAT3 CameraPosition;
+			float Padding;
+			DirectX::XMFLOAT4 AmbientColor;
+			DirectX::XMFLOAT3 LightDirection;
+			float Padding2;
+			DirectX::XMFLOAT4 LightColor;
 
-			VertexCBufferPerFrame()
-				: LightDirection(0.0f, 0.0f, -1.0f, 0.0f)
-			{
-			}
+			PSCBufferPerFrame() :
+				CameraPosition(Library::Vector3Helper::Zero), AmbientColor(Library::Vector4Helper::Zero),
+				LightDirection(Library::Vector3Helper::Forward), LightColor(Library::Vector4Helper::One) { }
 
-			VertexCBufferPerFrame(const XMFLOAT4& lightDirection, const XMFLOAT4& cameraPosition, float fogStart, float fogRange)
-				: LightDirection(lightDirection)
-			{
-			}
+			PSCBufferPerFrame(const DirectX::XMFLOAT3& cameraPosition, const DirectX::XMFLOAT4& ambientColor, const DirectX::XMFLOAT3& lightDirection, const DirectX::XMFLOAT4& lightColor) :
+				CameraPosition(cameraPosition), AmbientColor(ambientColor),
+				LightDirection(lightDirection), LightColor(lightColor) { }
 		};
 
-		struct PixelCBufferPerObject
+		struct PSCBufferPerObject
 		{
-			XMFLOAT3 SpecularColor;
+			DirectX::XMFLOAT3 SpecularColor;
 			float SpecularPower;
 
-			PixelCBufferPerObject() : SpecularColor(0.0f, 0.0f, 0.0f), SpecularPower(255.0f) { }
-
-			PixelCBufferPerObject(const XMFLOAT3& specularColor, float specularPower)
-				: SpecularColor(specularColor), SpecularPower(specularPower)
-			{
-			}
+			PSCBufferPerObject() :
+				SpecularColor(Library::Vector3Helper::Zero), SpecularPower(128.0f) { }
 		};
 
-		struct PixelCBufferPerFrame
-		{
-			XMFLOAT4 AmbientColor;
-			XMFLOAT4 LightColor;
-			XMFLOAT4 CameraPosition;
+		void CreateVertexBuffer(Library::VertexPositionTextureNormalTangent* vertices, std::uint32_t vertexCount, ID3D11Buffer** vertexBuffer) const;
+		void UpdateAmbientLight(const Library::GameTime& gameTime);
+		void UpdateDirectionalLight(const Library::GameTime& gameTime);
+		void UpdateSpecularLight(const Library::GameTime& gameTime);
 
-			PixelCBufferPerFrame()
-				: AmbientColor(0.0f, 0.0f, 0.0f, 0.0f), LightColor(1.0f, 1.0f, 1.0f, 1.0f), CameraPosition(0.0f, 0.0f, 0.0f, 1.0f)
-			{
-			}
-
-			PixelCBufferPerFrame(const XMFLOAT4& ambientColor, const XMFLOAT4& lightColor, const XMFLOAT4& cameraPosition)
-				: AmbientColor(ambientColor), LightColor(lightColor), CameraPosition(cameraPosition)
-			{
-			}
-		};
-
-		void CreateVertexBuffer(VertexPositionTextureNormalTangent* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const;
-		void UpdateAmbientLight(const GameTime& gameTime);
-		void UpdateDirectionalLight(const GameTime& gameTime);
-		void UpdateSpecularLight(const GameTime& gameTime);
-
-		static const XMFLOAT2 LightRotationRate;
+		static const DirectX::XMFLOAT2 LightRotationRate;
 		static const float LightModulationRate;
 
-		ID3D11VertexShader* mVertexShader;		
-		ID3D11PixelShader* mPixelShader;
-		ID3D11InputLayout* mInputLayout;
-		ID3D11Buffer* mVertexBuffer;
-		ID3D11Buffer* mVertexCBufferPerObject;
-		VertexCBufferPerObject mVertexCBufferPerObjectData;
-		ID3D11Buffer* mVertexCBufferPerFrame;		
-		VertexCBufferPerFrame mVertexCBufferPerFrameData;
-		ID3D11Buffer* mPixelCBufferPerObject;
-		PixelCBufferPerObject mPixelCBufferPerObjectData;
-		ID3D11Buffer* mPixelCBufferPerFrame;
-		PixelCBufferPerFrame mPixelCBufferPerFrameData;
-		UINT mVertexCount;
-		ID3D11ShaderResourceView* mColorTexture;		
-		ID3D11ShaderResourceView* mActiveNormalMap;
-		ID3D11ShaderResourceView* mBlankNormalMap;
-		ID3D11ShaderResourceView* mRealNormalMap;
-		bool mShowNormalMapping;
-		ID3D11SamplerState* mTrilinearSampler;
-		XMFLOAT4X4 mWorldMatrix;
-		std::unique_ptr<DirectionalLight> mDirectionalLight;
-
-		RenderStateHelper mRenderStateHelper;
-		std::unique_ptr<SpriteBatch> mSpriteBatch;
-		std::unique_ptr<SpriteFont> mSpriteFont;
-		XMFLOAT2 mTextPosition;
-
-		Keyboard* mKeyboard;
-		std::unique_ptr<ProxyModel> mProxyModel;		
+		DirectX::XMFLOAT4X4 mWorldMatrix;
+		VSCBufferPerObject mVSCBufferPerObjectData;
+		PSCBufferPerFrame mPSCBufferPerFrameData;
+		PSCBufferPerObject mPSCBufferPerObjectData;
+		Library::DirectionalLight mDirectionalLight;
+		Library::RenderStateHelper mRenderStateHelper;
+		Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
+		Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mVSCBufferPerObject;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mPSCBufferPerFrame;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mPSCBufferPerObject;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mColorTexture;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mActiveNormalMap;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mBlankNormalMap;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mRealNormalMap;
+		std::unique_ptr<Library::ProxyModel> mProxyModel;
+		Library::KeyboardComponent* mKeyboard;
+		std::uint32_t mVertexCount;
+		std::unique_ptr<DirectX::SpriteBatch> mSpriteBatch;
+		std::unique_ptr<DirectX::SpriteFont> mSpriteFont;
+		DirectX::XMFLOAT2 mTextPosition;
+		bool mUseRealNormalMap;
 	};
 }
