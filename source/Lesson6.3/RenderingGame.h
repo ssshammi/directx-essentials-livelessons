@@ -1,19 +1,18 @@
 #pragma once
 
-#include "Common.h"
 #include "Game.h"
-#include "Keyboard.h"
-
-using namespace Library;
+#include "RenderStateHelper.h"
+#include <windows.h>
+#include <functional>
 
 namespace Library
-{	
+{
+	class KeyboardComponent;
+	class MouseComponent;
+	class GamePadComponent;
 	class FpsComponent;
-	class Keyboard;
-	class Mouse;
-	class FirstPersonCamera;
+	class Camera;
 	class Grid;
-	class RenderStateHelper;
 	class Skybox;
 }
 
@@ -21,30 +20,28 @@ namespace Rendering
 {
 	class TransparencyMappingDemo;
 
-    class RenderingGame : public Game
-    {
-    public:
-        RenderingGame(HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand);
+	class RenderingGame final : public Library::Game
+	{
+	public:
+		RenderingGame(std::function<void*()> getWindowCallback, std::function<void(SIZE&)> getRenderTargetSizeCallback);
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-        virtual void Draw(const GameTime& gameTime) override;
-
-	protected:
+		virtual void Update(const Library::GameTime& gameTime) override;
+		virtual void Draw(const Library::GameTime& gameTime) override;
 		virtual void Shutdown() override;
 
-    private:
-        static const XMVECTORF32 BackgroundColor;
+		void Exit();
 
-		LPDIRECTINPUT8 mDirectInput;
-		std::unique_ptr<Keyboard> mKeyboard;
-		std::unique_ptr<Mouse> mMouse;
-		std::unique_ptr<FpsComponent> mFpsComponent;
-		std::unique_ptr<FirstPersonCamera> mCamera;
-		std::unique_ptr<Grid> mGrid;
-		std::unique_ptr<RenderStateHelper> mRenderStateHelper;
-		std::unique_ptr<Skybox> mSkybox;
+	private:
+		static const DirectX::XMVECTORF32 BackgroundColor;
 
-		std::unique_ptr<TransparencyMappingDemo> mTransparencyMappingDemo;
-    };
+		Library::RenderStateHelper mRenderStateHelper;
+		std::shared_ptr<Library::KeyboardComponent> mKeyboard;
+		std::shared_ptr<Library::MouseComponent> mMouse;
+		std::shared_ptr<Library::GamePadComponent> mGamePad;
+		std::shared_ptr<Library::FpsComponent> mFpsComponent;
+		std::shared_ptr<Library::Camera> mCamera;
+		std::shared_ptr<Library::Grid> mGrid;
+		std::shared_ptr<TransparencyMappingDemo> mTransparencyMappingDemo;
+	};
 }
