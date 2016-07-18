@@ -250,7 +250,7 @@ namespace Rendering
 		}
 		if (mKeyboard->IsKeyDown(Keys::Down))
 		{
-			rotationAmount.y += LightRotationRate.y * elapsedTime;
+			rotationAmount.y -= LightRotationRate.y * elapsedTime;
 		}
 
 		XMMATRIX lightRotationMatrix = XMMatrixIdentity();
