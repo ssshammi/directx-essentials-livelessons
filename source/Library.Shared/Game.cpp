@@ -170,6 +170,11 @@ namespace Library
 		mDirect3DDeviceContext->PSSetShaderResources(startSlot, count, emptySRV);
 	}
 
+	std::function<void*()> Game::GetWindowCallback() const
+	{
+		return mGetWindow;
+	}
+
 	void Game::Begin()
 	{
 		RenderTarget::Begin(mDirect3DDeviceContext.Get(), 1, mRenderTargetView.GetAddressOf(), mDepthStencilView.Get(), mViewport);

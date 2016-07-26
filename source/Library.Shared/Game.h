@@ -69,6 +69,7 @@ namespace Library
 		void UpdateRenderTargetSize();
 		void RegisterDeviceNotify(IDeviceNotify* deviceNotify);
 		virtual void UnbindPixelShaderResources(UINT startSlot, UINT count);
+		std::function<void*()> GetWindowCallback() const;
 
     protected:
 		virtual void Update(const GameTime& gameTime);

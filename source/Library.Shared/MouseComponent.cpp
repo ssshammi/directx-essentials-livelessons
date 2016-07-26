@@ -17,6 +17,8 @@ namespace Library
 	MouseComponent::MouseComponent(Game& game, MouseModes mode) :
 		GameComponent(game)
 	{
+		auto getWindow = mGame->GetWindowCallback();
+		sMouse->SetWindow(reinterpret_cast<HWND>(getWindow()));
 		sMouse->SetMode(static_cast<Mouse::Mode>(mode));
 	}
 
@@ -42,6 +44,11 @@ namespace Library
 
 		mLastState = mCurrentState;
 		mCurrentState = sMouse->GetState();
+	}
+
+	void MouseComponent::SetWindow(HWND window)
+	{
+		sMouse->SetWindow(window);
 	}
 
 	int MouseComponent::X() const

@@ -11,7 +11,7 @@ namespace Library
 		RTTI_DECLARATIONS(PerspectiveCamera, Camera)
 
     public:
-		PerspectiveCamera(Game& game);
+		explicit PerspectiveCamera(Game& game);
 		PerspectiveCamera(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance);
 		PerspectiveCamera(const PerspectiveCamera&) = default;
 		PerspectiveCamera& operator=(const PerspectiveCamera&) = default;

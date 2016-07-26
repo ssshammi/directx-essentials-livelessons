@@ -3,6 +3,7 @@
 #include "GameComponent.h"
 #include <Mouse.h>
 #include <memory>
+#include <windows.h>
 
 namespace DirectX
 {
@@ -33,13 +34,14 @@ namespace Library
 	public:
 		static DirectX::Mouse* Mouse();
 		
-		MouseComponent(Game& game, MouseModes mode = MouseModes::Absolute);
+		MouseComponent(Game& game, MouseModes mode = MouseModes::Relative);
 
 		const DirectX::Mouse::State& CurrentState() const;
 		const DirectX::Mouse::State& LastState() const;
 
 		virtual void Initialize() override;
 		virtual void Update(const GameTime& gameTime) override;
+		void SetWindow(HWND window);
 
 		int X() const;
 		int Y() const;
