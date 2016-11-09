@@ -24,6 +24,6 @@ VS_OUTPUT main(VS_INPUT IN)
 
 	OUT.Position = mul(IN.ObjectPosition, WorldViewProjection);
 	OUT.TextureCoordinate = IN.TextureCoordinate;
-	OUT.Normal = mul(float4(IN.Normal, 0), World).xyz;
+	OUT.Normal = normalize(mul(float4(IN.Normal, 0), World).xyz);
 	return OUT;
 }
