@@ -1,99 +1,106 @@
-#include "RenderingGame.h"
-#include "GameException.h"
-#include "Keyboard.h"
-#include "Mouse.h"
-#include "FpsComponent.h"
-#include "FirstPersonCamera.h"
-#include "Grid.h"
-#include "RenderStateHelper.h"
-#include "VectorHelper.h"
-#include "ColorHelper.h"
-#include "RasterizerStates.h"
-#include "Skybox.h"
-
-#include "EnvironmentMappingDemo.h"
+#include "pch.h"
 
 using namespace std;
+using namespace DirectX;
+using namespace Library;
 
 namespace Rendering
 {
-    const XMVECTORF32 RenderingGame::BackgroundColor = ColorHelper::CornflowerBlue;
+	const XMVECTORF32 RenderingGame::BackgroundColor = Colors::CornflowerBlue;
 
-    RenderingGame::RenderingGame(HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand)
-        :  Game(instance, windowClass, windowTitle, showCommand),
-		   mDirectInput(nullptr), mKeyboard(nullptr), mMouse(nullptr), mFpsComponent(nullptr), mCamera(nullptr), mRenderStateHelper(nullptr),
-		   mSkybox(nullptr), mEnvironmentMappingDemo(nullptr)
-    {
-    }
+	RenderingGame::RenderingGame(std::function<void*()> getWindowCallback, std::function<void(SIZE&)> getRenderTargetSizeCallback) :
+		Game(getWindowCallback, getRenderTargetSizeCallback), mRenderStateHelper(*this)
+	{
+	}
 
 	void RenderingGame::Initialize()
 	{
-		ThrowIfFailed(DirectInput8Create(mInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (LPVOID*)&mDirectInput, nullptr), "DirectInput8Create() failed");
+		RasterizerStates::Initialize(mDirect3DDevice.Get());
+		SamplerStates::Initialize(mDirect3DDevice.Get());
 
-		mKeyboard = make_unique<Keyboard>(*this, mDirectInput);
-		mComponents.push_back(mKeyboard.get());
-		mServices.AddService(Keyboard::TypeIdClass(), mKeyboard.get());
+		mKeyboard = make_shared<KeyboardComponent>(*this);
+		mComponents.push_back(mKeyboard);
+		mServices.AddService(KeyboardComponent::TypeIdClass(), mKeyboard.get());
 
-		mMouse = make_unique<Mouse>(*this, mDirectInput);
-		mComponents.push_back(mMouse.get());
-		mServices.AddService(Mouse::TypeIdClass(), mMouse.get());
+		mMouse = make_shared<MouseComponent>(*this);
+		mComponents.push_back(mMouse);
+		mServices.AddService(MouseComponent::TypeIdClass(), mMouse.get());
 
-		mFpsComponent = make_unique<FpsComponent>(*this);
-		mFpsComponent->Initialize();
+		mGamePad = make_shared<GamePadComponent>(*this);
+		mComponents.push_back(mGamePad);
+		mServices.AddService(GamePadComponent::TypeIdClass(), mGamePad.get());
 
-		mCamera = make_unique<FirstPersonCamera>(*this);
-		mComponents.push_back(mCamera.get());
+		mCamera = make_shared<FirstPersonCamera>(*this);
+		mComponents.push_back(mCamera);
 		mServices.AddService(Camera::TypeIdClass(), mCamera.get());
 
-		mGrid = make_unique<Grid>(*this, *mCamera);
-		mComponents.push_back(mGrid.get());
+		mGrid = make_shared<Grid>(*this, mCamera);
+		mComponents.push_back(mGrid);
 
-		mRenderStateHelper = make_unique<RenderStateHelper>(*this);
+		mSkybox = make_shared<Skybox>(*this, mCamera, L"Content\\Textures\\Maskonaive2_1024.dds", 500.0f);
+		mComponents.push_back(mSkybox);
 
-		RasterizerStates::Initialize(mDirect3DDevice);
-
-		mSkybox = make_unique<Skybox>(*this, *mCamera, L"Content\\Textures\\Maskonaive2_1024.dds", 500.0f);
-		mComponents.push_back(mSkybox.get());
-
-		mEnvironmentMappingDemo = make_unique<EnvironmentMappingDemo>(*this, *mCamera);
-		mComponents.push_back(mEnvironmentMappingDemo.get());
+		mEnvironmentMappingDemo = make_shared<EnvironmentMappingDemo>(*this, mCamera);
+		mComponents.push_back(mEnvironmentMappingDemo);
 
 		Game::Initialize();
 
-		mCamera->SetPosition(0.0f, 5.0f, 20.0f);
-		mCamera->ApplyRotation(XMMatrixRotationX(-XMConvertToRadians(10)));
-	}
+		mFpsComponent = make_shared<FpsComponent>(*this);
+		mFpsComponent->Initialize();
 
-	void RenderingGame::Shutdown()
-	{
-		ReleaseObject(mDirectInput);
-		RasterizerStates::Release();
-
-		Game::Shutdown();
+		mCamera->SetPosition(0.0f, 2.5f, 25.0f);
 	}
 
 	void RenderingGame::Update(const GameTime &gameTime)
 	{
 		mFpsComponent->Update(gameTime);
-		if (mKeyboard->WasKeyPressedThisFrame(DIK_ESCAPE))
+
+		if (mKeyboard->WasKeyPressedThisFrame(Keys::Escape) || mGamePad->WasButtonPressedThisFrame(GamePadButtons::Back))
 		{
 			Exit();
+		}
+
+		if (mKeyboard->WasKeyPressedThisFrame(Keys::G) || mGamePad->WasButtonPressedThisFrame(GamePadButtons::DPadUp))
+		{
+			mGrid->SetEnabled(!mGrid->Enabled());
+			mGrid->SetVisible(!mGrid->Visible());
 		}
 
 		Game::Update(gameTime);
 	}
 
-    void RenderingGame::Draw(const GameTime &gameTime)
-    {
-        mDirect3DDeviceContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&BackgroundColor));
-        mDirect3DDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	void RenderingGame::Draw(const GameTime &gameTime)
+	{
+		mDirect3DDeviceContext->ClearRenderTargetView(mRenderTargetView.Get(), reinterpret_cast<const float*>(&BackgroundColor));
+		mDirect3DDeviceContext->ClearDepthStencilView(mDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-        Game::Draw(gameTime);
+		Game::Draw(gameTime);
 
-		mRenderStateHelper->SaveAll();
+		mRenderStateHelper.SaveAll();
 		mFpsComponent->Draw(gameTime);
-		mRenderStateHelper->RestoreAll();
+		mRenderStateHelper.RestoreAll();
 
-		ThrowIfFailed(mSwapChain->Present(0, 0), "IDXGISwapChain::Present() failed.");
-    }
+		HRESULT hr = mSwapChain->Present(1, 0);
+
+		// If the device was removed either by a disconnection or a driver upgrade, we must recreate all device resources.
+		if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
+		{
+			HandleDeviceLost();
+		}
+		else
+		{
+			ThrowIfFailed(hr, "IDXGISwapChain::Present() failed.");
+		}
+	}
+
+	void RenderingGame::Shutdown()
+	{
+		SamplerStates::Shutdown();
+		RasterizerStates::Shutdown();
+	}
+
+	void RenderingGame::Exit()
+	{
+		PostQuitMessage(0);
+	}
 }

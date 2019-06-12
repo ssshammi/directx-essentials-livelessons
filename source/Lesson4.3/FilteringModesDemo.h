@@ -1,49 +1,33 @@
 #pragma once
 
 #include "DrawableGameComponent.h"
-#include "RenderStateHelper.h"
-
-using namespace Library;
 
 namespace Library
 {
+	class KeyboardComponent;
 	struct VertexPositionTexture;
-	class Mesh;
-	class Keyboard;
-}
-
-namespace DirectX
-{
-	class SpriteBatch;
-	class SpriteFont;
 }
 
 namespace Rendering
 {
-	class FilteringModesDemo : public DrawableGameComponent
+	class FilteringModesDemo final : public Library::DrawableGameComponent
 	{
-		RTTI_DECLARATIONS(FilteringModesDemo, DrawableGameComponent)
+		RTTI_DECLARATIONS(FilteringModesDemo, Library::DrawableGameComponent)
 
 	public:
-		FilteringModesDemo(Game& game, Camera& camera);
-		~FilteringModesDemo();
-
-		FilteringModesDemo() = delete;
-		FilteringModesDemo(const FilteringModesDemo& rhs) = delete;
-		FilteringModesDemo& operator=(const FilteringModesDemo& rhs) = delete;
+		FilteringModesDemo(Library::Game& game, const std::shared_ptr<Library::Camera>& camera);
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-		virtual void Draw(const GameTime& gameTime) override;
+		virtual void Update(const Library::GameTime& gameTime) override;
+		virtual void Draw(const Library::GameTime& gameTime) override;
 
 	private:
 		struct CBufferPerObject
 		{
-			XMFLOAT4X4 WorldViewProjection;
+			DirectX::XMFLOAT4X4 WorldViewProjection;
 
-			CBufferPerObject() : WorldViewProjection() { }
-
-			CBufferPerObject(const XMFLOAT4X4& wvp) : WorldViewProjection(wvp) { }
+			CBufferPerObject() = default;
+			CBufferPerObject(const DirectX::XMFLOAT4X4& wvp) : WorldViewProjection(wvp) { }
 		};
 
 		enum class FilteringMode
@@ -54,29 +38,23 @@ namespace Rendering
 			End
 		};
 
-		void CreateVertexBuffer(VertexPositionTexture* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const;
-		void CreateIndexBuffer(UINT* indices, UINT indexCount, ID3D11Buffer** indexBuffer) const;
+		void CreateVertexBuffer(Library::VertexPositionTexture* vertices, std::uint32_t vertexCount, ID3D11Buffer** vertexBuffer) const;
+		void CreateIndexBuffer(std::uint32_t* indices, std::uint32_t indexCount, ID3D11Buffer** indexBuffer) const;
 
 		static const std::string FilteringModeDisplayNames[];
 
-		ID3D11VertexShader* mVertexShader;		
-		ID3D11PixelShader* mPixelShader;
-		ID3D11InputLayout* mInputLayout;
-		ID3D11Buffer* mVertexBuffer;
-		ID3D11Buffer* mIndexBuffer;
-		ID3D11Buffer* mConstantBuffer;
-
-		RenderStateHelper mRenderStateHelper;
-		std::unique_ptr<SpriteBatch> mSpriteBatch;
-		std::unique_ptr<SpriteFont> mSpriteFont;
-		XMFLOAT2 mTextPosition;
-		
-		CBufferPerObject mCBufferPerObject;
-		XMFLOAT4X4 mWorldMatrix;
-		UINT mIndexCount;
-		ID3D11ShaderResourceView* mColorTexture;
-		Keyboard* mKeyboard;
-		FilteringMode mActiveFilteringMode;
-		std::map<FilteringMode, ID3D11SamplerState*> mTextureSamplersByFilteringMode;
+		DirectX::XMFLOAT4X4 mWorldMatrix;
+		CBufferPerObject mCBufferPerObjectData;
+		std::map<FilteringMode, Microsoft::WRL::ComPtr<ID3D11SamplerState>> mTextureSamplersByFilteringMode;
+		Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
+		Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mCBufferPerObject;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mColorTexture;
+		std::uint32_t mIndexCount;
+		FilteringMode mActiveFilteringMode;		
+		Library::KeyboardComponent* mKeyboard;
 	};
 }

@@ -1,98 +1,46 @@
-#include "SpotLightDemo.h"
-#include "Game.h"
-#include "GameException.h"
-#include "Utility.h"
-#include "VertexDeclarations.h"
-#include "ColorHelper.h"
-#include "MatrixHelper.h"
-#include "VectorHelper.h"
-#include "Camera.h"
-#include "SpotLight.h"
-#include <WICTextureLoader.h>
-#include <sstream>
-#include <iomanip>
-#include <SpriteBatch.h>
-#include <SpriteFont.h>
-#include "Keyboard.h"
-#include "ProxyModel.h"
+#include "pch.h"
+
+using namespace std;
+using namespace Library;
+using namespace DirectX;
 
 namespace Rendering
 {
 	RTTI_DEFINITIONS(SpotLightDemo)
 
-	const size_t SpotLightDemo::Alignment = 16;
+	const float SpotLightDemo::ModelRotationRate = XM_PI;
 	const float SpotLightDemo::LightModulationRate = UCHAR_MAX;
 	const float SpotLightDemo::LightMovementRate = 10.0f;
 	const XMFLOAT2 SpotLightDemo::LightRotationRate = XMFLOAT2(XM_2PI, XM_2PI);
 
-	void* SpotLightDemo::operator new(size_t size)
+	SpotLightDemo::SpotLightDemo(Game& game, const shared_ptr<Camera>& camera) :
+		DrawableGameComponent(game, camera),
+		mWorldMatrix(MatrixHelper::Identity), mSpotLight(game, XMFLOAT3(0.0f, 5.0f, 20.0f), 50.0f),
+		mRenderStateHelper(game), mVertexCount(0), mTextPosition(0.0f, 40.0f)
 	{
-		#if defined(DEBUG) || defined(_DEBUG)
-			return _aligned_malloc_dbg(size, Alignment, __FILE__, __LINE__);
-		#else
-			return _aligned_malloc(size, Alignment);
-		#endif
-	}
-
-	void SpotLightDemo::operator delete(void *p)
-	{
-		if (p != nullptr)
-		{
-			#if defined(DEBUG) || defined(_DEBUG)
-				_aligned_free_dbg(p);
-			#else
-				_aligned_free(p);
-			#endif
-		}
-	}
-
-	SpotLightDemo::SpotLightDemo(Game& game, Camera& camera)
-		: DrawableGameComponent(game, camera), mVertexShader(nullptr), mInputLayout(nullptr), mPixelShader(nullptr), mVertexBuffer(nullptr),
-		  mVertexCBufferPerObject(nullptr), mVertexCBufferPerObjectData(), mVertexCBufferPerFrame(nullptr), mVertexCBufferPerFrameData(),
-		  mPixelCBufferPerObject(nullptr), mPixelCBufferPerObjectData(), mPixelCBufferPerFrame(nullptr), mPixelCBufferPerFrameData(),
-		  mWorldMatrix(MatrixHelper::Identity), mSpotLight(nullptr), mVertexCount(0), mColorTexture(nullptr), mColorSampler(nullptr),
-		  mRenderStateHelper(game), mSpriteBatch(nullptr), mSpriteFont(nullptr), mTextPosition(0.0f, 40.0f),
-		  mKeyboard(nullptr), mProxyModel(nullptr)
-	{
-	}
-
-	SpotLightDemo::~SpotLightDemo()
-	{
-		ReleaseObject(mColorSampler)
-		ReleaseObject(mColorTexture)
-		ReleaseObject(mPixelCBufferPerFrame)
-		ReleaseObject(mPixelCBufferPerObject)
-		ReleaseObject(mVertexCBufferPerFrame)
-		ReleaseObject(mVertexCBufferPerObject)
-		ReleaseObject(mVertexBuffer)
-		ReleaseObject(mPixelShader)
-		ReleaseObject(mInputLayout)
-		ReleaseObject(mVertexShader)
 	}
 
 	void SpotLightDemo::Initialize()
 	{
-		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
-
 		// Load a compiled vertex shader
-		std::vector<char> compiledVertexShader;
-		Utility::LoadBinaryFile(L"Content\\Effects\\VertexShader.cso", compiledVertexShader);		
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateVertexShader(&compiledVertexShader[0], compiledVertexShader.size(), nullptr, &mVertexShader), "ID3D11Device::CreatedVertexShader() failed.");
+		vector<char> compiledVertexShader;
+		Utility::LoadBinaryFile(L"Content\\Shaders\\SpotLightDemoVS.cso", compiledVertexShader);
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateVertexShader(&compiledVertexShader[0], compiledVertexShader.size(), nullptr, mVertexShader.ReleaseAndGetAddressOf()), "ID3D11Device::CreatedVertexShader() failed.");
 
 		// Load a compiled pixel shader
-		std::vector<char> compiledPixelShader;
-		Utility::LoadBinaryFile(L"Content\\Effects\\PixelShader.cso", compiledPixelShader);
-		ThrowIfFailed(mGame->Direct3DDevice()->CreatePixelShader(&compiledPixelShader[0], compiledPixelShader.size(), nullptr, &mPixelShader), "ID3D11Device::CreatedPixelShader() failed.");
+		vector<char> compiledPixelShader;
+		Utility::LoadBinaryFile(L"Content\\Shaders\\SpotLightDemoPS.cso", compiledPixelShader);
+		ThrowIfFailed(mGame->Direct3DDevice()->CreatePixelShader(&compiledPixelShader[0], compiledPixelShader.size(), nullptr, mPixelShader.ReleaseAndGetAddressOf()), "ID3D11Device::CreatedPixelShader() failed.");
 
 		// Create an input layout
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 		{
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), &compiledVertexShader[0], compiledVertexShader.size(), &mInputLayout), "ID3D11Device::CreateInputLayout() failed.");
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), &compiledVertexShader[0], compiledVertexShader.size(), mInputLayout.ReleaseAndGetAddressOf()), "ID3D11Device::CreateInputLayout() failed.");
 
 		// Create a vertex buffer
 		VertexPositionTextureNormal vertices[] =
@@ -106,72 +54,68 @@ namespace Rendering
 			VertexPositionTextureNormal(XMFLOAT4(0.5f, 0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 1.0f), Vector3Helper::Backward),
 		};
 
-		mVertexCount = ARRAYSIZE(vertices);
+		mVertexCount = static_cast<uint32_t>(ARRAYSIZE(vertices));
 		CreateVertexBuffer(vertices, mVertexCount, &mVertexBuffer);
 
 		// Create constant buffers
-		D3D11_BUFFER_DESC constantBufferDesc;
-		ZeroMemory(&constantBufferDesc, sizeof(constantBufferDesc));
-		constantBufferDesc.ByteWidth = sizeof(mVertexCBufferPerObjectData);
+		D3D11_BUFFER_DESC constantBufferDesc = { 0 };
+		constantBufferDesc.ByteWidth = sizeof(VSCBufferPerFrame);
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, &mVertexCBufferPerObject), "ID3D11Device::CreateBuffer() failed.");
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, mVSCBufferPerFrame.ReleaseAndGetAddressOf()), "ID3D11Device::CreateBuffer() failed.");
 
-		constantBufferDesc.ByteWidth = sizeof(mVertexCBufferPerFrameData);
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, &mVertexCBufferPerFrame), "ID3D11Device::CreateBuffer() failed.");
+		constantBufferDesc.ByteWidth = sizeof(VSCBufferPerObject);
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, mVSCBufferPerObject.ReleaseAndGetAddressOf()), "ID3D11Device::CreateBuffer() failed.");
 
-		constantBufferDesc.ByteWidth = sizeof(mPixelCBufferPerObjectData);
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, &mPixelCBufferPerObject), "ID3D11Device::CreateBuffer() failed.");
+		constantBufferDesc.ByteWidth = sizeof(PSCBufferPerFrame);
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, mPSCBufferPerFrame.ReleaseAndGetAddressOf()), "ID3D11Device::CreateBuffer() failed.");
 
-		constantBufferDesc.ByteWidth = sizeof(mPixelCBufferPerFrameData);
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, &mPixelCBufferPerFrame), "ID3D11Device::CreateBuffer() failed.");
+		constantBufferDesc.ByteWidth = sizeof(PSCBufferPerObject);
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, mPSCBufferPerObject.ReleaseAndGetAddressOf()), "ID3D11Device::CreateBuffer() failed.");
 
-		// Load a texture
-		std::wstring textureName = L"Content\\Textures\\Checkerboard.png";
-		ThrowIfFailed(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName.c_str(), nullptr, &mColorTexture), "CreateWICTextureFromFile() failed.");
+		// Load textures for the color and specular maps
+		wstring textureName = L"Content\\Textures\\Checkerboard.png";
+		ThrowIfFailed(CreateWICTextureFromFile(mGame->Direct3DDevice(), textureName.c_str(), nullptr, mColorTexture.ReleaseAndGetAddressOf()), "CreateDDSTextureFromFile() failed.");
 
-		// Create a texture sampler
-		D3D11_SAMPLER_DESC samplerDesc;
-		ZeroMemory(&samplerDesc, sizeof(samplerDesc));
-		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateSamplerState(&samplerDesc, &mColorSampler), "ID3D11Device::CreateSamplerState() failed.");
+		textureName = L"Content\\Textures\\CheckerboardSpecularMap.png";
+		ThrowIfFailed(CreateWICTextureFromFile(mGame->Direct3DDevice(), textureName.c_str(), nullptr, mSpecularMap.ReleaseAndGetAddressOf()), "CreateWICTextureFromFile() failed.");
 
 		// Create text rendering helpers
-		mSpriteBatch = std::make_unique<SpriteBatch>(mGame->Direct3DDeviceContext());
-		mSpriteFont = std::make_unique<SpriteFont>(mGame->Direct3DDevice(), L"Content\\Fonts\\Arial_14_Regular.spritefont");
+		mSpriteBatch = make_unique<SpriteBatch>(mGame->Direct3DDeviceContext());
+		mSpriteFont = make_unique<SpriteFont>(mGame->Direct3DDevice(), L"Content\\Fonts\\Arial_14_Regular.spritefont");
 
 		// Retrieve the keyboard service
-		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
-		assert(mKeyboard != nullptr);
+		mKeyboard = reinterpret_cast<KeyboardComponent*>(mGame->Services().GetService(KeyboardComponent::TypeIdClass()));
 
-		mProxyModel = std::make_unique<ProxyModel>(*mGame, *mCamera, "Content\\Models\\SpotLightProxy.obj", 0.5f);
+		// Setup the spot light
+		mVSCBufferPerFrameData.LightPosition = mSpotLight.Position();
+		mVSCBufferPerFrameData.LightRadius = mSpotLight.Radius();		
+		mPSCBufferPerFrameData.LightColor = ColorHelper::ToFloat4(mSpotLight.Color(), true);
+		mPSCBufferPerFrameData.LightPosition = mSpotLight.Position();
+		mPSCBufferPerFrameData.SpotLightInnerAngle = mSpotLight.InnerAngle();
+		mPSCBufferPerFrameData.SpotLightOuterAngle = mSpotLight.OuterAngle();
+		mPSCBufferPerFrameData.CameraPosition = mCamera->Position();
+		mPSCBufferPerFrameData.LightLookAt = mSpotLight.DirectionToLight();
+		mGame->Direct3DDeviceContext()->UpdateSubresource(mVSCBufferPerFrame.Get(), 0, nullptr, &mVSCBufferPerFrameData, 0, 0);
+		mGame->Direct3DDeviceContext()->UpdateSubresource(mPSCBufferPerObject.Get(), 0, nullptr, &mPSCBufferPerObjectData, 0, 0);
+
+		// Load a proxy model for the point light
+		mProxyModel = make_unique<ProxyModel>(*mGame, mCamera, "Content\\Models\\SpotLightProxy.obj.bin", 0.5f);
 		mProxyModel->Initialize();
+		mProxyModel->SetPosition(mSpotLight.Position());
 		mProxyModel->ApplyRotation(XMMatrixRotationX(XM_PIDIV2));
-
-		mSpotLight = std::make_unique<SpotLight>(*mGame);
-		mSpotLight->SetRadius(50.0f);
-		mSpotLight->SetPosition(0.0f, 5.0f, 2.0f);
-		mVertexCBufferPerFrameData.LightPosition = mSpotLight->Position();
-		mVertexCBufferPerFrameData.LightRadius = mSpotLight->Radius();
-		mVertexCBufferPerFrameData.LightLookAt = mSpotLight->Direction();
-		
-		mPixelCBufferPerFrameData.LightPosition = mSpotLight->Position();
-		mPixelCBufferPerFrameData.SpotLightInnerAngle = mSpotLight->InnerAngle();
-		mPixelCBufferPerFrameData.SpotLightOuterAngle = mSpotLight->OuterAngle();
-		mPixelCBufferPerFrameData.LightColor = ColorHelper::ToFloat4(mSpotLight->Color(), true);
-		mPixelCBufferPerFrameData.CameraPosition = mCamera->Position();
 
 		XMStoreFloat4x4(&mWorldMatrix, XMMatrixScaling(10.0f, 10.0f, 10.0f));
 	}
 
 	void SpotLightDemo::Update(const GameTime& gameTime)
 	{
-		UpdateAmbientLight(gameTime);
-		UpdateSpotLight(gameTime);
-		UpdateSpecularLight(gameTime);
+		if (mKeyboard != nullptr)
+		{
+			UpdateAmbientLight(gameTime);
+			UpdateSpotLight(gameTime);
+			UpdateSpecularLight(gameTime);
+		}
+
 		mProxyModel->Update(gameTime);
 	}
 
@@ -179,177 +123,186 @@ namespace Rendering
 	{
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		direct3DDeviceContext->IASetInputLayout(mInputLayout);
+		direct3DDeviceContext->IASetInputLayout(mInputLayout.Get());
 
 		UINT stride = sizeof(VertexPositionTextureNormal);
 		UINT offset = 0;
-		direct3DDeviceContext->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
+		direct3DDeviceContext->IASetVertexBuffers(0, 1, mVertexBuffer.GetAddressOf(), &stride, &offset);
+		direct3DDeviceContext->IASetIndexBuffer(mIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-		direct3DDeviceContext->VSSetShader(mVertexShader, nullptr, 0);
-		direct3DDeviceContext->PSSetShader(mPixelShader, nullptr, 0);
+		direct3DDeviceContext->VSSetShader(mVertexShader.Get(), nullptr, 0);
+		direct3DDeviceContext->PSSetShader(mPixelShader.Get(), nullptr, 0);
 
 		XMMATRIX worldMatrix = XMLoadFloat4x4(&mWorldMatrix);
 		XMMATRIX wvp = worldMatrix * mCamera->ViewProjectionMatrix();
-		XMStoreFloat4x4(&mVertexCBufferPerObjectData.WorldViewProjection, XMMatrixTranspose(wvp));
-		XMStoreFloat4x4(&mVertexCBufferPerObjectData.World, XMMatrixTranspose(worldMatrix));		
+		wvp = XMMatrixTranspose(wvp);
+		XMStoreFloat4x4(&mVSCBufferPerObjectData.WorldViewProjection, wvp);
+		XMStoreFloat4x4(&mVSCBufferPerObjectData.World, XMMatrixTranspose(worldMatrix));
+		direct3DDeviceContext->UpdateSubresource(mVSCBufferPerObject.Get(), 0, nullptr, &mVSCBufferPerObjectData, 0, 0);	
 
-		mPixelCBufferPerFrameData.CameraPosition = mCamera->Position();
-
-		direct3DDeviceContext->UpdateSubresource(mVertexCBufferPerFrame, 0, nullptr, &mVertexCBufferPerFrameData, 0, 0);
-		direct3DDeviceContext->UpdateSubresource(mVertexCBufferPerObject, 0, nullptr, &mVertexCBufferPerObjectData, 0, 0);
-		direct3DDeviceContext->UpdateSubresource(mPixelCBufferPerFrame, 0, nullptr, &mPixelCBufferPerFrameData, 0, 0);
-		direct3DDeviceContext->UpdateSubresource(mPixelCBufferPerObject, 0, nullptr, &mPixelCBufferPerObjectData, 0, 0);
-
-		static ID3D11Buffer* VSConstantBuffers[] = { mVertexCBufferPerFrame, mVertexCBufferPerObject };
+		ID3D11Buffer* VSConstantBuffers[] = { mVSCBufferPerFrame.Get(), mVSCBufferPerObject.Get() };
 		direct3DDeviceContext->VSSetConstantBuffers(0, ARRAYSIZE(VSConstantBuffers), VSConstantBuffers);
 
-		static ID3D11Buffer* PSConstantBuffers[] = { mPixelCBufferPerFrame, mPixelCBufferPerObject };
+		mPSCBufferPerFrameData.CameraPosition = mCamera->Position();
+		direct3DDeviceContext->UpdateSubresource(mPSCBufferPerFrame.Get(), 0, nullptr, &mPSCBufferPerFrameData, 0, 0);
+
+		ID3D11Buffer* PSConstantBuffers[] = { mPSCBufferPerFrame.Get(), mPSCBufferPerObject.Get() };
 		direct3DDeviceContext->PSSetConstantBuffers(0, ARRAYSIZE(PSConstantBuffers), PSConstantBuffers);
 
-		direct3DDeviceContext->PSSetShaderResources(0, 1, &mColorTexture);
-		direct3DDeviceContext->PSSetSamplers(0, 1, &mColorSampler);
+		ID3D11ShaderResourceView* PSShaderResources[] = { mColorTexture.Get(), mSpecularMap.Get() };
+		direct3DDeviceContext->PSSetShaderResources(0, ARRAYSIZE(PSShaderResources), PSShaderResources);
+		direct3DDeviceContext->PSSetSamplers(0, 1, SamplerStates::TrilinearWrap.GetAddressOf());
 
 		direct3DDeviceContext->Draw(mVertexCount, 0);
 
 		mProxyModel->Draw(gameTime);
 
+		// Draw help text
 		mRenderStateHelper.SaveAll();
-
 		mSpriteBatch->Begin();
 
-		std::wostringstream helpLabel;
-
-		helpLabel << "Ambient Intensity (+PgUp/-PgDn): " << mPixelCBufferPerFrameData.AmbientColor.x << "\n";
-		helpLabel << L"Specular Intensity (+Insert/-Delete): " << mPixelCBufferPerObjectData.SpecularColor.x << "\n";
-		helpLabel << L"Specular Power (+O/-P): " << mPixelCBufferPerObjectData.SpecularPower << "\n";
-		helpLabel << L"Spot Light Intensity (+Home/-End): " << mPixelCBufferPerFrameData.LightColor.x << "\n";
+		wostringstream helpLabel;
+		helpLabel << "Ambient Intensity (+PgUp/-PgDn): " << mPSCBufferPerFrameData.AmbientColor.x << "\n";
+		helpLabel << L"Specular Intensity (+Insert/-Delete): " << mPSCBufferPerObjectData.SpecularColor.x << "\n";
+		helpLabel << L"Specular Power (+O/-P): " << mPSCBufferPerObjectData.SpecularPower << "\n";
+		helpLabel << L"Spot Light Intensity (+Home/-End): " << mPSCBufferPerFrameData.LightColor.x << "\n";
 		helpLabel << L"Move Spot Light (8/2, 4/6, 3/9)\n";
 		helpLabel << L"Rotate Spot Light (Arrow Keys)\n";
-		helpLabel << L"Spot Light Radius (+B/-N): " << mSpotLight->Radius() << "\n";
-		helpLabel << L"Spot Light Inner Angle(+Z/-X): " << mSpotLight->InnerAngle() << "\n";
-		helpLabel << L"Spot Light Outer Angle(+C/-V): " << mSpotLight->OuterAngle() << "\n";
+		helpLabel << L"Spot Light Radius (+B/-N): " << mSpotLight.Radius() << "\n";
+		helpLabel << L"Spot Light Inner Angle(+Z/-X): " << mSpotLight.InnerAngle() << "\n";
+		helpLabel << L"Spot Light Outer Angle(+C/-V): " << mSpotLight.OuterAngle() << "\n";
+		helpLabel << L"Toggle Grid (G)";
 	
 		mSpriteFont->DrawString(mSpriteBatch.get(), helpLabel.str().c_str(), mTextPosition);
-
 		mSpriteBatch->End();
-
 		mRenderStateHelper.RestoreAll();
 	}
 
-	void SpotLightDemo::CreateVertexBuffer(VertexPositionTextureNormal* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer) const
+	void SpotLightDemo::CreateVertexBuffer(VertexPositionTextureNormal* vertices, uint32_t vertexCount, ID3D11Buffer** vertexBuffer) const
 	{
-		D3D11_BUFFER_DESC vertexBufferDesc;
-		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
+		D3D11_BUFFER_DESC vertexBufferDesc = { 0 };
 		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTextureNormal) * vertexCount;
 		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
-		D3D11_SUBRESOURCE_DATA vertexSubResourceData;
-		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
-		vertexSubResourceData.pSysMem = vertices;
+		D3D11_SUBRESOURCE_DATA vertexSubResourceData = { 0 };
+		vertexSubResourceData.pSysMem = &vertices[0];
 		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer), "ID3D11Device::CreateBuffer() failed.");
 	}
 
 	void SpotLightDemo::UpdateAmbientLight(const GameTime& gameTime)
 	{
-		static float ambientIntensity = 0.0f;
+		static float ambientIntensity = mPSCBufferPerFrameData.AmbientColor.x;
 
-		if (mKeyboard->IsKeyDown(DIK_PGUP) && ambientIntensity < 1.0f)
+		assert(mKeyboard != nullptr);
+
+		if (mKeyboard->IsKeyDown(Keys::PageUp) && ambientIntensity < 1.0f)
 		{
-			ambientIntensity += static_cast<float>(gameTime.ElapsedGameTime());
+			ambientIntensity += gameTime.ElapsedGameTimeSeconds().count();
 			ambientIntensity = min(ambientIntensity, 1.0f);
 
-			mPixelCBufferPerFrameData.AmbientColor = XMFLOAT4(ambientIntensity, ambientIntensity, ambientIntensity, 1.0f);
+			mPSCBufferPerFrameData.AmbientColor = XMFLOAT4(ambientIntensity, ambientIntensity, ambientIntensity, 1.0f);
+			mGame->Direct3DDeviceContext()->UpdateSubresource(mPSCBufferPerFrame.Get(), 0, nullptr, &mPSCBufferPerFrameData, 0, 0);
 		}
-
-		if (mKeyboard->IsKeyDown(DIK_PGDN) && ambientIntensity > 0.0f)
+		else if (mKeyboard->IsKeyDown(Keys::PageDown) && ambientIntensity > 0.0f)
 		{
-			ambientIntensity -= (float)gameTime.ElapsedGameTime();
+			ambientIntensity -= gameTime.ElapsedGameTimeSeconds().count();
 			ambientIntensity = max(ambientIntensity, 0.0f);
 
-			mPixelCBufferPerFrameData.AmbientColor = XMFLOAT4(ambientIntensity, ambientIntensity, ambientIntensity, 1.0f);
+			mPSCBufferPerFrameData.AmbientColor = XMFLOAT4(ambientIntensity, ambientIntensity, ambientIntensity, 1.0f);
+			mGame->Direct3DDeviceContext()->UpdateSubresource(mPSCBufferPerFrame.Get(), 0, nullptr, &mPSCBufferPerFrameData, 0, 0);
 		}
 	}
 
 	void SpotLightDemo::UpdateSpotLight(const GameTime& gameTime)
 	{
-		static float spotLightIntensity = 1.0f;
-		float elapsedTime = static_cast<float>(gameTime.ElapsedGameTime());
+		static float lightIntensity = mPSCBufferPerFrameData.LightColor.x;
 
-		// Update spot light intensity		
-		if (mKeyboard->IsKeyDown(DIK_HOME) && spotLightIntensity < 1.0f)
+		assert(mKeyboard != nullptr);
+
+		float elapsedTime = gameTime.ElapsedGameTimeSeconds().count();
+		bool updateCBuffer = false;
+
+		// Update spot light intensity
+		if (mKeyboard->IsKeyDown(Keys::Home) && lightIntensity < 1.0f)
 		{
-			spotLightIntensity += elapsedTime;
-			spotLightIntensity = min(spotLightIntensity, 1.0f);
+			lightIntensity += elapsedTime;
+			lightIntensity = min(lightIntensity, 1.0f);
 
-			mPixelCBufferPerFrameData.LightColor = XMFLOAT4(spotLightIntensity, spotLightIntensity, spotLightIntensity, 1.0f);
-			mSpotLight->SetColor(mPixelCBufferPerFrameData.LightColor);
+			mPSCBufferPerFrameData.LightColor = XMFLOAT4(lightIntensity, lightIntensity, lightIntensity, 1.0f);
+			mSpotLight.SetColor(mPSCBufferPerFrameData.LightColor);
+			updateCBuffer = true;
 		}
-		if (mKeyboard->IsKeyDown(DIK_END) && spotLightIntensity > 0.0f)
+		else if (mKeyboard->IsKeyDown(Keys::End) && lightIntensity > 0.0f)
 		{
-			spotLightIntensity -= elapsedTime;
-			spotLightIntensity = max(spotLightIntensity, 0.0f);
+			lightIntensity -= elapsedTime;
+			lightIntensity = max(lightIntensity, 0.0f);
 
-			mPixelCBufferPerFrameData.LightColor = XMFLOAT4(spotLightIntensity, spotLightIntensity, spotLightIntensity, 1.0f);
-			mSpotLight->SetColor(mPixelCBufferPerFrameData.LightColor);
+			mPSCBufferPerFrameData.LightColor = XMFLOAT4(lightIntensity, lightIntensity, lightIntensity, 1.0f);
+			mSpotLight.SetColor(mPSCBufferPerFrameData.LightColor);
+			updateCBuffer = true;
 		}
 
 		// Move spot light
 		XMFLOAT3 movementAmount = Vector3Helper::Zero;
 		if (mKeyboard != nullptr)
 		{
-			if (mKeyboard->IsKeyDown(DIK_NUMPAD4))
+			if (mKeyboard->IsKeyDown(Keys::NumPad4))
 			{
 				movementAmount.x = -1.0f;
 			}
 
-			if (mKeyboard->IsKeyDown(DIK_NUMPAD6))
+			if (mKeyboard->IsKeyDown(Keys::NumPad6))
 			{
 				movementAmount.x = 1.0f;
 			}
 
-			if (mKeyboard->IsKeyDown(DIK_NUMPAD9))
+			if (mKeyboard->IsKeyDown(Keys::NumPad9))
 			{
 				movementAmount.y = 1.0f;
 			}
 
-			if (mKeyboard->IsKeyDown(DIK_NUMPAD3))
+			if (mKeyboard->IsKeyDown(Keys::NumPad3))
 			{
 				movementAmount.y = -1.0f;
 			}
 
-			if (mKeyboard->IsKeyDown(DIK_NUMPAD8))
+			if (mKeyboard->IsKeyDown(Keys::NumPad8))
 			{
 				movementAmount.z = -1.0f;
 			}
 
-			if (mKeyboard->IsKeyDown(DIK_NUMPAD2))
+			if (mKeyboard->IsKeyDown(Keys::NumPad2))
 			{
 				movementAmount.z = 1.0f;
 			}
 		}
 
-		XMVECTOR movement = XMLoadFloat3(&movementAmount) * LightMovementRate * elapsedTime;
-		mSpotLight->SetPosition(mSpotLight->PositionVector() + movement);
-		mProxyModel->SetPosition(mSpotLight->Position());
-		mVertexCBufferPerFrameData.LightPosition = mSpotLight->Position();
-		mPixelCBufferPerFrameData.LightPosition = mSpotLight->Position();
+		if (movementAmount.x != 0.0f || movementAmount.y != 0.0f || movementAmount.z != 0.0f)
+		{
+			XMVECTOR movement = XMLoadFloat3(&movementAmount) * LightMovementRate * elapsedTime;
+			mSpotLight.SetPosition(mSpotLight.PositionVector() + movement);
+			mProxyModel->SetPosition(mSpotLight.Position());
+			mVSCBufferPerFrameData.LightPosition = mSpotLight.Position();
+			mPSCBufferPerFrameData.LightPosition = mSpotLight.Position();
+			updateCBuffer = true;
+		}
 
 		// Rotate spot light
 		XMFLOAT2 rotationAmount = Vector2Helper::Zero;
-		if (mKeyboard->IsKeyDown(DIK_LEFTARROW))
+		if (mKeyboard->IsKeyDown(Keys::Left))
 		{
 			rotationAmount.x += LightRotationRate.x * elapsedTime;
 		}
-		if (mKeyboard->IsKeyDown(DIK_RIGHTARROW))
+		if (mKeyboard->IsKeyDown(Keys::Right))
 		{
 			rotationAmount.x -= LightRotationRate.x * elapsedTime;
 		}
-		if (mKeyboard->IsKeyDown(DIK_UPARROW))
+		if (mKeyboard->IsKeyDown(Keys::Up))
 		{
 			rotationAmount.y += LightRotationRate.y * elapsedTime;
 		}
-		if (mKeyboard->IsKeyDown(DIK_DOWNARROW))
+		if (mKeyboard->IsKeyDown(Keys::Down))
 		{
 			rotationAmount.y -= LightRotationRate.y * elapsedTime;
 		}
@@ -362,107 +315,132 @@ namespace Rendering
 
 		if (rotationAmount.y != 0)
 		{
-			XMMATRIX lightRotationAxisMatrix = XMMatrixRotationAxis(mSpotLight->RightVector(), rotationAmount.y);
-			lightRotationMatrix *= lightRotationAxisMatrix;
+			lightRotationMatrix *= XMMatrixRotationAxis(mSpotLight.RightVector(), rotationAmount.y);
 		}
 
 		if (rotationAmount.x != 0.0f || rotationAmount.y != 0.0f)
 		{
-			mSpotLight->ApplyRotation(lightRotationMatrix);
+			mSpotLight.ApplyRotation(lightRotationMatrix);
 			mProxyModel->ApplyRotation(lightRotationMatrix);
-			mVertexCBufferPerFrameData.LightLookAt = mSpotLight->Direction();
+			mPSCBufferPerFrameData.LightLookAt = mSpotLight.DirectionToLight();
+			updateCBuffer = true;
 		}
 
 		// Update the light's radius
-		if (mKeyboard->IsKeyDown(DIK_B))
+		if (mKeyboard->IsKeyDown(Keys::V))
 		{
-			float radius = mSpotLight->Radius() + LightModulationRate * elapsedTime;
-			mSpotLight->SetRadius(radius);
-			mVertexCBufferPerFrameData.LightRadius = mSpotLight->Radius();
+			float radius = mSpotLight.Radius() + LightModulationRate * elapsedTime;
+			mSpotLight.SetRadius(radius);
+			mVSCBufferPerFrameData.LightRadius = mSpotLight.Radius();
+			updateCBuffer = true;
 		}
 
-		if (mKeyboard->IsKeyDown(DIK_N))
+		if (mKeyboard->IsKeyDown(Keys::B))
 		{
-			float radius = mSpotLight->Radius() - LightModulationRate * elapsedTime;
+			float radius = mSpotLight.Radius() - LightModulationRate * elapsedTime;
 			radius = max(radius, 0.0f);
-			mSpotLight->SetRadius(radius);
-			mVertexCBufferPerFrameData.LightRadius = mSpotLight->Radius();
+			mSpotLight.SetRadius(radius);
+			mVSCBufferPerFrameData.LightRadius = mSpotLight.Radius();
+			updateCBuffer = true;
 		}
 		
 		// Update inner and outer angles
-		static float innerAngle = mSpotLight->InnerAngle();
-		if (mKeyboard->IsKeyDown(DIK_Z) && innerAngle < 1.0f)
+		static float innerAngle = mSpotLight.InnerAngle();
+		if (mKeyboard->IsKeyDown(Keys::Z) && innerAngle < 1.0f)
 		{
 			innerAngle += elapsedTime;
 			innerAngle = min(innerAngle, 1.0f);
 
-			mSpotLight->SetInnerAngle(innerAngle);
-			mPixelCBufferPerFrameData.SpotLightInnerAngle = mSpotLight->InnerAngle();
+			mSpotLight.SetInnerAngle(innerAngle);
+			mPSCBufferPerFrameData.SpotLightInnerAngle = mSpotLight.InnerAngle();
+			updateCBuffer = true;
 		}
-		if (mKeyboard->IsKeyDown(DIK_X) && innerAngle > 0.5f)
+		if (mKeyboard->IsKeyDown(Keys::X) && innerAngle > 0.5f)
 		{
 			innerAngle -= elapsedTime;
 			innerAngle = max(innerAngle, 0.5f);
 
-			mSpotLight->SetInnerAngle(innerAngle);
-			mPixelCBufferPerFrameData.SpotLightInnerAngle = mSpotLight->InnerAngle();
+			mSpotLight.SetInnerAngle(innerAngle);
+			mPSCBufferPerFrameData.SpotLightInnerAngle = mSpotLight.InnerAngle();
+			updateCBuffer = true;
 		}
 
-		static float outerAngle = mSpotLight->OuterAngle();
-		if (mKeyboard->IsKeyDown(DIK_C) && outerAngle < 0.5f)
+		static float outerAngle = mSpotLight.OuterAngle();
+		if (mKeyboard->IsKeyDown(Keys::C) && outerAngle < 0.5f)
 		{
 			outerAngle += elapsedTime;
 			outerAngle = min(outerAngle, 0.5f);
 
-			mSpotLight->SetOuterAngle(outerAngle);
-			mPixelCBufferPerFrameData.SpotLightOuterAngle = mSpotLight->OuterAngle();
+			mSpotLight.SetOuterAngle(outerAngle);
+			mPSCBufferPerFrameData.SpotLightOuterAngle = mSpotLight.OuterAngle();
+			updateCBuffer = true;
 		}
-		if (mKeyboard->IsKeyDown(DIK_V) && outerAngle > 0.0f)
+		if (mKeyboard->IsKeyDown(Keys::V) && outerAngle > 0.0f)
 		{
 			outerAngle -= elapsedTime;
 			outerAngle = max(outerAngle, 0.0f);
 
-			mSpotLight->SetOuterAngle(outerAngle);
-			mPixelCBufferPerFrameData.SpotLightOuterAngle = mSpotLight->OuterAngle();
+			mSpotLight.SetOuterAngle(outerAngle);
+			mPSCBufferPerFrameData.SpotLightOuterAngle = mSpotLight.OuterAngle();
+			updateCBuffer = true;
+		}
+
+		if (updateCBuffer)
+		{
+			mGame->Direct3DDeviceContext()->UpdateSubresource(mVSCBufferPerFrame.Get(), 0, nullptr, &mVSCBufferPerFrameData, 0, 0);
+			mGame->Direct3DDeviceContext()->UpdateSubresource(mPSCBufferPerFrame.Get(), 0, nullptr, &mPSCBufferPerFrameData, 0, 0);
 		}
 	}
 
 	void SpotLightDemo::UpdateSpecularLight(const GameTime& gameTime)
 	{
-		static float specularIntensity = 1.0f;
+		static float specularIntensity = mPSCBufferPerObjectData.SpecularColor.x;
 
-		if (mKeyboard->IsKeyDown(DIK_INSERT) && specularIntensity < 1.0f)
+		assert(mKeyboard != nullptr);
+
+		bool updateCBuffer = false;
+
+		if (mKeyboard->IsKeyDown(Keys::Insert) && specularIntensity < 1.0f)
 		{
-			specularIntensity += static_cast<float>(gameTime.ElapsedGameTime());
+			specularIntensity += gameTime.ElapsedGameTimeSeconds().count();
 			specularIntensity = min(specularIntensity, 1.0f);
 
-			mPixelCBufferPerObjectData.SpecularColor = XMFLOAT3(specularIntensity, specularIntensity, specularIntensity);
+			mPSCBufferPerObjectData.SpecularColor = XMFLOAT3(specularIntensity, specularIntensity, specularIntensity);
+			updateCBuffer = true;
 		}
 
-		if (mKeyboard->IsKeyDown(DIK_DELETE) && specularIntensity > 0.0f)
+		if (mKeyboard->IsKeyDown(Keys::Delete) && specularIntensity > 0.0f)
 		{
-			specularIntensity -= (float)gameTime.ElapsedGameTime();
+			specularIntensity -= gameTime.ElapsedGameTimeSeconds().count();
 			specularIntensity = max(specularIntensity, 0.0f);
 
-			mPixelCBufferPerObjectData.SpecularColor = XMFLOAT3(specularIntensity, specularIntensity, specularIntensity);
+			mPSCBufferPerObjectData.SpecularColor = XMFLOAT3(specularIntensity, specularIntensity, specularIntensity);
+			updateCBuffer = true;
 		}
 
-		static float specularPower = mPixelCBufferPerObjectData.SpecularPower;
+		static float specularPower = mPSCBufferPerObjectData.SpecularPower;
 
-		if (mKeyboard->IsKeyDown(DIK_O) && specularPower < UCHAR_MAX)
+		if (mKeyboard->IsKeyDown(Keys::O) && specularPower < UCHAR_MAX)
 		{
-			specularPower += LightModulationRate * static_cast<float>(gameTime.ElapsedGameTime());
+			specularPower += LightModulationRate * gameTime.ElapsedGameTimeSeconds().count();
 			specularPower = min(specularPower, static_cast<float>(UCHAR_MAX));
 
-			mPixelCBufferPerObjectData.SpecularPower = specularPower;
+			mPSCBufferPerObjectData.SpecularPower = specularPower;
+			updateCBuffer = true;
 		}
 
-		if (mKeyboard->IsKeyDown(DIK_P) && specularPower > 1.0f)
+		if (mKeyboard->IsKeyDown(Keys::P) && specularPower > 1.0f)
 		{
-			specularPower -= LightModulationRate * static_cast<float>(gameTime.ElapsedGameTime());
+			specularPower -= LightModulationRate * gameTime.ElapsedGameTimeSeconds().count();
 			specularPower = max(specularPower, 1.0f);
 
-			mPixelCBufferPerObjectData.SpecularPower = specularPower;
+			mPSCBufferPerObjectData.SpecularPower = specularPower;
+			updateCBuffer = true;
+		}
+
+		if (updateCBuffer)
+		{
+			mGame->Direct3DDeviceContext()->UpdateSubresource(mPSCBufferPerObject.Get(), 0, nullptr, &mPSCBufferPerObjectData, 0, 0);
 		}
 	}
 }

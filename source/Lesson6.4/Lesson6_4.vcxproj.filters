@@ -1,46 +1,56 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="Content">
       <UniqueIdentifier>{5e9d9e03-98ee-4f42-9b72-18ad7b49079a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Content\Effects">
+    <Filter Include="Content\Shaders">
       <UniqueIdentifier>{bbf24e6a-fa5b-4181-8a13-17ca0858e960}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Content\Models">
+      <UniqueIdentifier>{b2ac260c-0722-472f-9567-419b7e3120f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Content\Textures">
+      <UniqueIdentifier>{b59e5f9a-76e2-4b99-8634-911b1f96afcf}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Program.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderingGame.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NormalMappingDemo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClCompile Include="RenderingGame.cpp" />
+    <ClCompile Include="Program.cpp" />
+    <ClCompile Include="NormalMappingDemo.cpp" />
+    <ClCompile Include="pch.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RenderingGame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NormalMappingDemo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <ClInclude Include="RenderingGame.h" />
+    <ClInclude Include="NormalMappingDemo.h" />
+    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="PixelShader.hlsl">
-      <Filter>Content\Effects</Filter>
+    <FxCompile Include="Content\Shaders\NormalMappingDemoVS.hlsl">
+      <Filter>Content\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="VertexShader.hlsl">
-      <Filter>Content\Effects</Filter>
+    <FxCompile Include="Content\Shaders\NormalMappingDemoPS.hlsl">
+      <Filter>Content\Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Content\Models\DirectionalLightProxy.obj.bin">
+      <Filter>Content\Models</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Content\Textures\Blocks_COLOR_RGB.png">
+      <Filter>Content\Textures</Filter>
+    </Image>
+    <Image Include="Content\Textures\Blocks_NORM.png">
+      <Filter>Content\Textures</Filter>
+    </Image>
+    <Image Include="Content\Textures\DefaultNormalMap.png">
+      <Filter>Content\Textures</Filter>
+    </Image>
+    <Image Include="Content\Textures\Maskonaive2_1024.dds">
+      <Filter>Content\Textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>

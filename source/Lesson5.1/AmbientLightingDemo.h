@@ -2,13 +2,12 @@
 
 #include "DrawableGameComponent.h"
 #include "RenderStateHelper.h"
-
-using namespace Library;
+#include <DirectXMath.h>
 
 namespace Library
 {
 	class Mesh;
-	class Keyboard;
+	class KeyboardComponent;
 }
 
 namespace DirectX
@@ -19,63 +18,53 @@ namespace DirectX
 
 namespace Rendering
 {
-	class AmbientLightingDemo : public DrawableGameComponent
+	class AmbientLightingDemo final : public Library::DrawableGameComponent
 	{
 		RTTI_DECLARATIONS(AmbientLightingDemo, DrawableGameComponent)
 
 	public:
-		AmbientLightingDemo(Game& game, Camera& camera);
-		~AmbientLightingDemo();
-
-		AmbientLightingDemo() = delete;
-		AmbientLightingDemo(const AmbientLightingDemo& rhs) = delete;
-		AmbientLightingDemo& operator=(const AmbientLightingDemo& rhs) = delete;
+		AmbientLightingDemo(Library::Game& game, const std::shared_ptr<Library::Camera>& camera);
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-		virtual void Draw(const GameTime& gameTime) override;
+		virtual void Update(const Library::GameTime& gameTime) override;
+		virtual void Draw(const Library::GameTime& gameTime) override;
 
 	private:
 		struct CBufferPerObject
 		{
-			XMFLOAT4X4 WorldViewProjection;
+			DirectX::XMFLOAT4X4 WorldViewProjection;
 
-			CBufferPerObject() : WorldViewProjection() {}
-
-			CBufferPerObject(const XMFLOAT4X4& wvp) : WorldViewProjection(wvp) { }
+			CBufferPerObject() = default;
+			CBufferPerObject(const DirectX::XMFLOAT4X4& wvp) : WorldViewProjection(wvp) { }
 		};
 
 		struct CBufferPerFrame
 		{
-			XMFLOAT4 AmbientColor; // Constant buffers must have a byte width in multiples of 16
+			DirectX::XMFLOAT4 AmbientColor; // Constant buffers must have a byte width in multiples of 16
 
 			CBufferPerFrame() : AmbientColor(1.0f, 1.0f, 1.0f, 1.0f) { }
-
-			CBufferPerFrame(const XMFLOAT4& ambientColor) : AmbientColor(ambientColor) { }
+			CBufferPerFrame(const DirectX::XMFLOAT4& ambientColor) : AmbientColor(ambientColor) { }
 		};
 
-		void CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
-		void UpdateAmbientLight(const GameTime& gameTime);
+		void CreateVertexBuffer(const Library::Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
+		void UpdateAmbientLight(const Library::GameTime& gameTime);
 
-		ID3D11VertexShader* mVertexShader;		
-		ID3D11PixelShader* mPixelShader;
-		ID3D11InputLayout* mInputLayout;
-		ID3D11Buffer* mVertexBuffer;
-		ID3D11Buffer* mIndexBuffer;
-		ID3D11Buffer* mCBufferPerObject;
+		DirectX::XMFLOAT4X4 mWorldMatrix;
 		CBufferPerObject mCBufferPerObjectData;
-		ID3D11Buffer* mCBufferPerFrame;		
 		CBufferPerFrame mCBufferPerFrameData;
-		XMFLOAT4X4 mWorldMatrix;
-		UINT mIndexCount;
-		ID3D11ShaderResourceView* mColorTexture;
-		ID3D11SamplerState* mColorSampler;
-
-		RenderStateHelper mRenderStateHelper;
-		std::unique_ptr<SpriteBatch> mSpriteBatch;
-		std::unique_ptr<SpriteFont> mSpriteFont;
-		XMFLOAT2 mTextPosition;
-
-		Keyboard* mKeyboard;
+		Library::RenderStateHelper mRenderStateHelper;
+		Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
+		Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mCBufferPerObject;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mCBufferPerFrame;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mColorTexture;
+		std::uint32_t mIndexCount;		
+		std::unique_ptr<DirectX::SpriteBatch> mSpriteBatch;
+		std::unique_ptr<DirectX::SpriteFont> mSpriteFont;
+		DirectX::XMFLOAT2 mTextPosition;
+		Library::KeyboardComponent* mKeyboard;
 	};
 }

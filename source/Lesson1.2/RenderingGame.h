@@ -1,35 +1,32 @@
 #pragma once
 
-#include "Common.h"
 #include "Game.h"
-
-using namespace Library;
+#include <windows.h>
+#include <functional>
 
 namespace Library
 {
-	class FpsComponent;
-	class Keyboard;
+	class KeyboardComponent;
+	class FpsComponent;	
 }
 
 namespace Rendering
 {
-    class RenderingGame : public Game
+    class RenderingGame : public Library::Game
     {
     public:
-        RenderingGame(HINSTANCE instance, const std::wstring& windowClass, const std::wstring& windowTitle, int showCommand);
+		RenderingGame(std::function<void*()> getWindowCallback, std::function<void(SIZE&)> getRenderTargetSizeCallback);
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-        virtual void Draw(const GameTime& gameTime) override;
+		virtual void Update(const Library::GameTime& gameTime) override;
+		virtual void Draw(const Library::GameTime& gameTime) override;
 
-	protected:
-		virtual void Shutdown() override;
+		void Exit();
 
     private:
-        static const XMVECTORF32 BackgroundColor;
+		static const DirectX::XMVECTORF32 BackgroundColor;
 
-		LPDIRECTINPUT8 mDirectInput;
-		std::unique_ptr<Keyboard> mKeyboard;
-		std::unique_ptr<FpsComponent> mFpsComponent;
+		std::shared_ptr<Library::KeyboardComponent> mKeyboard;
+		std::shared_ptr<Library::FpsComponent> mFpsComponent;
     };
 }

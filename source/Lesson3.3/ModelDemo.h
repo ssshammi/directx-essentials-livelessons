@@ -1,52 +1,54 @@
 #pragma once
 
+#include <wrl.h>
+#include <d3d11_2.h>
+#include <DirectXMath.h>
+#include <cstdint>
+#include <memory>
 #include "DrawableGameComponent.h"
-
-using namespace Library;
 
 namespace Library
 {
+	class Camera;
 	class Mesh;
 }
 
 namespace Rendering
 {
-	class ModelDemo : public DrawableGameComponent
+	class ModelDemo final : public Library::DrawableGameComponent
 	{
-		RTTI_DECLARATIONS(ModelDemo, DrawableGameComponent)
-
 	public:
-		ModelDemo(Game& game, Camera& camera);
-		~ModelDemo();
+		ModelDemo(Library::Game& game, const std::shared_ptr<Library::Camera>& camera);
 
-		ModelDemo() = delete;
-		ModelDemo(const ModelDemo& rhs) = delete;
-		ModelDemo& operator=(const ModelDemo& rhs) = delete;
+		bool AnimationEnabled() const;
+		void SetAnimationEnabled(bool enabled);
 
 		virtual void Initialize() override;
-		virtual void Draw(const GameTime& gameTime) override;
+		virtual void Update(const Library::GameTime& gameTime) override;
+		virtual void Draw(const Library::GameTime& gameTime) override;
 
 	private:
 		struct CBufferPerObject
 		{
-			XMFLOAT4X4 WorldViewProjection;
+			DirectX::XMFLOAT4X4 WorldViewProjection;
 
-			CBufferPerObject() : WorldViewProjection() { }
-
-			CBufferPerObject(const XMFLOAT4X4& wvp) : WorldViewProjection(wvp) { }
+			CBufferPerObject() = default;
+			CBufferPerObject(const DirectX::XMFLOAT4X4& wvp) : WorldViewProjection(wvp) { }
 		};
 
-		void CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
+		void CreateVertexBuffer(const Library::Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
 
-		ID3D11VertexShader* mVertexShader;		
-		ID3D11PixelShader* mPixelShader;
-		ID3D11InputLayout* mInputLayout;
-		ID3D11Buffer* mVertexBuffer;
-		ID3D11Buffer* mIndexBuffer;
-		ID3D11Buffer* mConstantBuffer;
-		
+		static const float RotationRate;
+
+		DirectX::XMFLOAT4X4 mWorldMatrix;
 		CBufferPerObject mCBufferPerObject;
-		XMFLOAT4X4 mWorldMatrix;
-		UINT mIndexCount;
+		Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
+		Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mConstantBuffer;		
+		std::uint32_t mIndexCount;
+		bool mAnimationEnabled;
 	};
 }

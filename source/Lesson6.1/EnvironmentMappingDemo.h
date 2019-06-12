@@ -2,13 +2,12 @@
 
 #include "DrawableGameComponent.h"
 #include "RenderStateHelper.h"
-
-using namespace Library;
+#include <DirectXMath.h>
 
 namespace Library
 {
 	class Mesh;
-	class Keyboard;
+	class KeyboardComponent;
 }
 
 namespace DirectX
@@ -19,100 +18,82 @@ namespace DirectX
 
 namespace Rendering
 {
-	class EnvironmentMappingDemo : public DrawableGameComponent
+	class EnvironmentMappingDemo : public Library::DrawableGameComponent
 	{
-		RTTI_DECLARATIONS(EnvironmentMappingDemo, DrawableGameComponent)
+		RTTI_DECLARATIONS(EnvironmentMappingDemo, Library::DrawableGameComponent)
 
 	public:		
-		static void* operator new(size_t size);
-		static void operator delete(void *p);
-
-		EnvironmentMappingDemo(Game& game, Camera& camera);
-		~EnvironmentMappingDemo();
-
-		EnvironmentMappingDemo() = delete;
-		EnvironmentMappingDemo(const EnvironmentMappingDemo& rhs) = delete;
-		EnvironmentMappingDemo& operator=(const EnvironmentMappingDemo& rhs) = delete;
+		EnvironmentMappingDemo(Library::Game& game, const std::shared_ptr<Library::Camera>& camera);
 
 		virtual void Initialize() override;
-		virtual void Update(const GameTime& gameTime) override;
-		virtual void Draw(const GameTime& gameTime) override;
+		virtual void Update(const Library::GameTime& gameTime) override;
+		virtual void Draw(const Library::GameTime& gameTime) override;
 
 	private:
-		struct VertexCBufferPerObject
+		struct VSCBufferPerFrame
 		{
-			XMFLOAT4X4 WorldViewProjection;
-			XMFLOAT4X4 World;
-			
-			VertexCBufferPerObject() : WorldViewProjection(), World() { }
+			DirectX::XMFLOAT3 CameraPosition;
+			float Padding;
 
-			VertexCBufferPerObject(const XMFLOAT4X4& wvp, const XMFLOAT4X4& world) : WorldViewProjection(wvp), World(world) { }
+			VSCBufferPerFrame() :
+				CameraPosition(Library::Vector3Helper::Zero) { }
+			VSCBufferPerFrame(const DirectX::XMFLOAT3& cameraPosition) :
+				CameraPosition(cameraPosition) { }
 		};
 
-		__declspec(align(16))
-		struct VertexCBufferPerFrame
+		struct VSCBufferPerObject
 		{
-			XMFLOAT3 CameraPosition;
+			DirectX::XMFLOAT4X4 WorldViewProjection;
+			DirectX::XMFLOAT4X4 World;
 
-			VertexCBufferPerFrame() : CameraPosition(0.0f, 0.0f, 0.0f) { }
-
-			VertexCBufferPerFrame(const XMFLOAT3& cameraPosition) : CameraPosition(cameraPosition) { }
+			VSCBufferPerObject() = default;
+			VSCBufferPerObject(const DirectX::XMFLOAT4X4& wvp, const DirectX::XMFLOAT4X4& world) :
+				WorldViewProjection(wvp), World(world) { }
 		};
 
-		__declspec(align(16))
-		struct PixelCBufferPerObject
+		struct PSCBufferPerFrame
+		{
+			DirectX::XMFLOAT4 AmbientColor;
+			DirectX::XMFLOAT4 EnvColor;
+
+			PSCBufferPerFrame() :
+				AmbientColor(Library::Vector4Helper::One), EnvColor(Library::Vector4Helper::One) { }
+			PSCBufferPerFrame(const DirectX::XMFLOAT4& ambientColor, const DirectX::XMFLOAT4& envColor) :
+				AmbientColor(ambientColor), EnvColor(envColor) { }
+		};
+
+		struct PSCBufferPerObject
 		{
 			float ReflectionAmount;
+			DirectX::XMFLOAT3 Padding;
 
-			PixelCBufferPerObject() : ReflectionAmount(25.0f) { }
-
-			PixelCBufferPerObject(float reflectionAmount) : ReflectionAmount(reflectionAmount) { }
+			PSCBufferPerObject() : ReflectionAmount(0.9f) { }
+			PSCBufferPerObject(float reflectionAmount) : ReflectionAmount(reflectionAmount) { }
 		};
 
-		struct PixelCBufferPerFrame
-		{
-			XMFLOAT4 AmbientColor;
-			XMFLOAT4 EnvColor;						
-
-			PixelCBufferPerFrame() : AmbientColor(0.0f, 0.0f, 0.0f, 0.0f), EnvColor(1.0f, 1.0f, 1.0f, 1.0f) { }
-
-			PixelCBufferPerFrame(const XMFLOAT4& ambientColor, const XMFLOAT4& envColor)
-				: AmbientColor(ambientColor), EnvColor(envColor)
-			{
-			}
-		};
-
-		void CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
+		void CreateVertexBuffer(const Library::Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
 				
-		static const size_t Alignment;
-		static const XMFLOAT4 EnvColor;
-		static const XMFLOAT4 AmbientColor;
-
-		ID3D11VertexShader* mVertexShader;
-		ID3D11PixelShader* mPixelShader;
-		ID3D11InputLayout* mInputLayout;
-		ID3D11Buffer* mVertexBuffer;
-		ID3D11Buffer* mIndexBuffer;
-		ID3D11Buffer* mVertexCBufferPerObject;
-		VertexCBufferPerObject mVertexCBufferPerObjectData;
-		ID3D11Buffer* mVertexCBufferPerFrame;		
-		VertexCBufferPerFrame mVertexCBufferPerFrameData;
-		ID3D11Buffer* mPixelCBufferPerObject;
-		PixelCBufferPerObject mPixelCBufferPerObjectData;
-		ID3D11Buffer* mPixelCBufferPerFrame;
-		PixelCBufferPerFrame mPixelCBufferPerFrameData;
-		UINT mIndexCount;
-		ID3D11ShaderResourceView* mColorTexture;
-		ID3D11ShaderResourceView* mEnvironmentMap;
-		ID3D11SamplerState* mTrilinearSampler;
-		XMFLOAT4X4 mWorldMatrix;
-		float mReflectionAmount;
-
-		RenderStateHelper mRenderStateHelper;
-		std::unique_ptr<SpriteBatch> mSpriteBatch;
-		std::unique_ptr<SpriteFont> mSpriteFont;
-		XMFLOAT2 mTextPosition;
-
-		Keyboard* mKeyboard;
+		DirectX::XMFLOAT4X4 mWorldMatrix;
+		PSCBufferPerFrame mPSCBufferPerFrameData;		
+		VSCBufferPerFrame mVSCBufferPerFrameData;
+		VSCBufferPerObject mVSCBufferPerObjectData;
+		PSCBufferPerObject mPSCBufferPerObjectData;
+		Library::RenderStateHelper mRenderStateHelper;
+		Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
+		Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mVSCBufferPerFrame;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mVSCBufferPerObject;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mPSCBufferPerFrame;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mPSCBufferPerObject;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mColorTexture;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mEnvironmentMap;
+		Library::KeyboardComponent* mKeyboard;
+		std::uint32_t mIndexCount;
+		std::unique_ptr<DirectX::SpriteBatch> mSpriteBatch;
+		std::unique_ptr<DirectX::SpriteFont> mSpriteFont;
+		DirectX::XMFLOAT2 mTextPosition;
 	};
 }

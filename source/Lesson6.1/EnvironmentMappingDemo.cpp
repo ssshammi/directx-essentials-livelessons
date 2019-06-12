@@ -1,254 +1,185 @@
-#include "EnvironmentMappingDemo.h"
-#include "Game.h"
-#include "GameException.h"
-#include "Utility.h"
-#include "VertexDeclarations.h"
-#include "ColorHelper.h"
-#include "MatrixHelper.h"
-#include "VectorHelper.h"
-#include "Camera.h"
-#include "Model.h"
-#include "Mesh.h"
-#include <DDSTextureLoader.h>
-#include <WICTextureLoader.h>
-#include <sstream>
-#include <iomanip>
-#include <SpriteBatch.h>
-#include <SpriteFont.h>
-#include "Keyboard.h"
-#include "ProxyModel.h"
+#include "pch.h"
+
+using namespace std;
+using namespace Library;
+using namespace DirectX;
 
 namespace Rendering
 {
 	RTTI_DEFINITIONS(EnvironmentMappingDemo)
 
-	const size_t EnvironmentMappingDemo::Alignment = 16;
-	const XMFLOAT4 EnvironmentMappingDemo::AmbientColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	const XMFLOAT4 EnvironmentMappingDemo::EnvColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-
-	void* EnvironmentMappingDemo::operator new(size_t size)
+	EnvironmentMappingDemo::EnvironmentMappingDemo(Game& game, const shared_ptr<Camera>& camera) :
+		DrawableGameComponent(game, camera),
+		mWorldMatrix(MatrixHelper::Identity), mIndexCount(0),
+		mRenderStateHelper(game), mTextPosition(0.0f, 40.0f)
 	{
-		#if defined(DEBUG) || defined(_DEBUG)
-			return _aligned_malloc_dbg(size, Alignment, __FILE__, __LINE__);
-		#else
-			return _aligned_malloc(size, Alignment);
-		#endif
-	}
-
-	void EnvironmentMappingDemo::operator delete(void *p)
-	{
-		if (p != nullptr)
-		{
-			#if defined(DEBUG) || defined(_DEBUG)
-				_aligned_free_dbg(p);
-			#else
-				_aligned_free(p);
-			#endif
-		}
-	}
-
-	EnvironmentMappingDemo::EnvironmentMappingDemo(Game& game, Camera& camera)
-		: DrawableGameComponent(game, camera), mVertexShader(nullptr), mInputLayout(nullptr), mPixelShader(nullptr), mVertexBuffer(nullptr),
-		  mIndexBuffer(nullptr), mVertexCBufferPerObject(nullptr), mVertexCBufferPerObjectData(), mVertexCBufferPerFrame(nullptr), mVertexCBufferPerFrameData(),
-		  mPixelCBufferPerObject(nullptr), mPixelCBufferPerObjectData(), mPixelCBufferPerFrame(nullptr), mPixelCBufferPerFrameData(),
-		  mWorldMatrix(MatrixHelper::Identity), mIndexCount(0), mColorTexture(nullptr), mEnvironmentMap(nullptr), mTrilinearSampler(nullptr), mReflectionAmount(1.0f),
-		  mRenderStateHelper(game), mSpriteBatch(nullptr), mSpriteFont(nullptr), mTextPosition(0.0f, 40.0f),
-		  mKeyboard(nullptr)
-	{
-	}
-
-	EnvironmentMappingDemo::~EnvironmentMappingDemo()
-	{
-		ReleaseObject(mTrilinearSampler)
-		ReleaseObject(mEnvironmentMap)
-		ReleaseObject(mColorTexture)
-		ReleaseObject(mPixelCBufferPerFrame)
-		ReleaseObject(mPixelCBufferPerObject)
-		ReleaseObject(mVertexCBufferPerFrame)
-		ReleaseObject(mVertexCBufferPerObject)
-		ReleaseObject(mIndexBuffer)
-		ReleaseObject(mVertexBuffer)
-		ReleaseObject(mPixelShader)
-		ReleaseObject(mInputLayout)
-		ReleaseObject(mVertexShader)
 	}
 
 	void EnvironmentMappingDemo::Initialize()
 	{
-		SetCurrentDirectory(Utility::ExecutableDirectory().c_str());
-
 		// Load a compiled vertex shader
-		std::vector<char> compiledVertexShader;
-		Utility::LoadBinaryFile(L"Content\\Effects\\VertexShader.cso", compiledVertexShader);		
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateVertexShader(&compiledVertexShader[0], compiledVertexShader.size(), nullptr, &mVertexShader), "ID3D11Device::CreatedVertexShader() failed.");
+		vector<char> compiledVertexShader;
+		Utility::LoadBinaryFile(L"Content\\Shaders\\EnvironmentMappingDemoVS.cso", compiledVertexShader);
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateVertexShader(&compiledVertexShader[0], compiledVertexShader.size(), nullptr, mVertexShader.ReleaseAndGetAddressOf()), "ID3D11Device::CreatedVertexShader() failed.");
 
 		// Load a compiled pixel shader
-		std::vector<char> compiledPixelShader;
-		Utility::LoadBinaryFile(L"Content\\Effects\\PixelShader.cso", compiledPixelShader);
-		ThrowIfFailed(mGame->Direct3DDevice()->CreatePixelShader(&compiledPixelShader[0], compiledPixelShader.size(), nullptr, &mPixelShader), "ID3D11Device::CreatedPixelShader() failed.");
+		vector<char> compiledPixelShader;
+		Utility::LoadBinaryFile(L"Content\\Shaders\\EnvironmentMappingDemoPS.cso", compiledPixelShader);
+		ThrowIfFailed(mGame->Direct3DDevice()->CreatePixelShader(&compiledPixelShader[0], compiledPixelShader.size(), nullptr, mPixelShader.ReleaseAndGetAddressOf()), "ID3D11Device::CreatedPixelShader() failed.");
 
 		// Create an input layout
 		D3D11_INPUT_ELEMENT_DESC inputElementDescriptions[] =
 		{
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), &compiledVertexShader[0], compiledVertexShader.size(), &mInputLayout), "ID3D11Device::CreateInputLayout() failed.");
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateInputLayout(inputElementDescriptions, ARRAYSIZE(inputElementDescriptions), &compiledVertexShader[0], compiledVertexShader.size(), mInputLayout.ReleaseAndGetAddressOf()), "ID3D11Device::CreateInputLayout() failed.");
 
 		// Load the model
-		std::unique_ptr<Model> model = std::make_unique<Model>(*mGame, "Content\\Models\\Sphere.obj", true);
+		Library::Model model("Content\\Models\\Sphere.obj.bin");
 
 		// Create vertex and index buffers for the model
-		Mesh* mesh = model->Meshes().at(0);
-		CreateVertexBuffer(mGame->Direct3DDevice(), *mesh, &mVertexBuffer);
-		mesh->CreateIndexBuffer(&mIndexBuffer);
-		mIndexCount = mesh->Indices().size();
+		Library::Mesh* mesh = model.Meshes().at(0).get();
+		CreateVertexBuffer(*mesh, mVertexBuffer.ReleaseAndGetAddressOf());
+		mesh->CreateIndexBuffer(*mGame->Direct3DDevice(), mIndexBuffer.ReleaseAndGetAddressOf());
+		mIndexCount = static_cast<uint32_t>(mesh->Indices().size());
 
 		// Create constant buffers
-		D3D11_BUFFER_DESC constantBufferDesc;
-		ZeroMemory(&constantBufferDesc, sizeof(constantBufferDesc));
-		constantBufferDesc.ByteWidth = sizeof(mVertexCBufferPerObjectData);
+		D3D11_BUFFER_DESC constantBufferDesc = { 0 };
+		constantBufferDesc.ByteWidth = sizeof(VSCBufferPerFrame);
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, &mVertexCBufferPerObject), "ID3D11Device::CreateBuffer() failed.");
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, mVSCBufferPerFrame.ReleaseAndGetAddressOf()), "ID3D11Device::CreateBuffer() failed.");
 
-		constantBufferDesc.ByteWidth = sizeof(mVertexCBufferPerFrameData);
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, &mVertexCBufferPerFrame), "ID3D11Device::CreateBuffer() failed.");
+		constantBufferDesc.ByteWidth = sizeof(VSCBufferPerObject);
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, mVSCBufferPerObject.ReleaseAndGetAddressOf()), "ID3D11Device::CreateBuffer() failed.");
 
-		constantBufferDesc.ByteWidth = sizeof(mPixelCBufferPerObjectData);
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, &mPixelCBufferPerObject), "ID3D11Device::CreateBuffer() failed.");
+		constantBufferDesc.ByteWidth = sizeof(PSCBufferPerFrame);
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, mPSCBufferPerFrame.ReleaseAndGetAddressOf()), "ID3D11Device::CreateBuffer() failed.");
 
-		constantBufferDesc.ByteWidth = sizeof(mPixelCBufferPerFrameData);
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, &mPixelCBufferPerFrame), "ID3D11Device::CreateBuffer() failed.");
+		constantBufferDesc.ByteWidth = sizeof(PSCBufferPerObject);
+		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, mPSCBufferPerObject.ReleaseAndGetAddressOf()), "ID3D11Device::CreateBuffer() failed.");
 
-		// Load a texture
-		std::wstring textureName = L"Content\\Textures\\Maskonaive2_1024.dds";
-		ThrowIfFailed(DirectX::CreateDDSTextureFromFile(mGame->Direct3DDevice(), textureName.c_str(), nullptr, &mEnvironmentMap), "CreateDDSTextureFromFile() failed.");
+		// Update cbuffers for the ambient and environment colors and the reflection amount
+		mGame->Direct3DDeviceContext()->UpdateSubresource(mPSCBufferPerFrame.Get(), 0, nullptr, &mPSCBufferPerFrameData, 0, 0);
+		mGame->Direct3DDeviceContext()->UpdateSubresource(mPSCBufferPerObject.Get(), 0, nullptr, &mPSCBufferPerObjectData, 0, 0);
+
+		// Load textures for the color and environment maps
+		wstring textureName = L"Content\\Textures\\Maskonaive2_1024.dds";
+		ThrowIfFailed(CreateDDSTextureFromFile(mGame->Direct3DDevice(), textureName.c_str(), nullptr, mEnvironmentMap.ReleaseAndGetAddressOf()), "CreateDDSTextureFromFile() failed.");
 
 		textureName = L"Content\\Textures\\Checkerboard.png";
-		ThrowIfFailed(DirectX::CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName.c_str(), nullptr, &mColorTexture), "CreateWICTextureFromFile() failed.");
-
-		// Create a texture sampler
-		D3D11_SAMPLER_DESC samplerDesc;
-		ZeroMemory(&samplerDesc, sizeof(samplerDesc));
-		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-
-		ThrowIfFailed(mGame->Direct3DDevice()->CreateSamplerState(&samplerDesc, &mTrilinearSampler), "ID3D11Device::CreateSamplerState() failed.");
+		ThrowIfFailed(CreateWICTextureFromFile(mGame->Direct3DDevice(), mGame->Direct3DDeviceContext(), textureName.c_str(), nullptr, mColorTexture.ReleaseAndGetAddressOf()), "CreateWICTextureFromFile() failed.");
 
 		// Create text rendering helpers
-		mSpriteBatch = std::make_unique<SpriteBatch>(mGame->Direct3DDeviceContext());
-		mSpriteFont = std::make_unique<SpriteFont>(mGame->Direct3DDevice(), L"Content\\Fonts\\Arial_14_Regular.spritefont");
+		mSpriteBatch = make_unique<SpriteBatch>(mGame->Direct3DDeviceContext());
+		mSpriteFont = make_unique<SpriteFont>(mGame->Direct3DDevice(), L"Content\\Fonts\\Arial_14_Regular.spritefont");
 
 		// Retrieve the keyboard service
-		mKeyboard = (Keyboard*)mGame->Services().GetService(Keyboard::TypeIdClass());
-		assert(mKeyboard != nullptr);
-
-		mPixelCBufferPerObjectData.ReflectionAmount = mReflectionAmount;
-		mPixelCBufferPerFrameData.AmbientColor = AmbientColor;
-		mPixelCBufferPerFrameData.EnvColor = EnvColor;
+		mKeyboard = reinterpret_cast<KeyboardComponent*>(mGame->Services().GetService(KeyboardComponent::TypeIdClass()));
 	}
 
 	void EnvironmentMappingDemo::Update(const GameTime& gameTime)
 	{
-		float elapsedTime = static_cast<float>(gameTime.ElapsedGameTime());
+		if (mKeyboard != nullptr)
+		{
+			float elapsedTime = gameTime.ElapsedGameTimeSeconds().count();
 
-		if (mKeyboard->IsKeyDown(DIK_UP) && mReflectionAmount < 1.0f)
-		{
-			mReflectionAmount += elapsedTime;
-			mReflectionAmount = min(mReflectionAmount, 1.0f);
-			mPixelCBufferPerObjectData.ReflectionAmount = mReflectionAmount;
-		}
-		if (mKeyboard->IsKeyDown(DIK_DOWN) && mReflectionAmount > 0.0f)
-		{
-			mReflectionAmount -= elapsedTime;
-			mReflectionAmount = max(mReflectionAmount, 0.0f);
-			mPixelCBufferPerObjectData.ReflectionAmount = mReflectionAmount;
+			bool updateCbuffer = false;
+			if (mKeyboard->IsKeyDown(Keys::Up) && mPSCBufferPerObjectData.ReflectionAmount < 1.0f)
+			{
+				mPSCBufferPerObjectData.ReflectionAmount += elapsedTime;
+				mPSCBufferPerObjectData.ReflectionAmount = min(mPSCBufferPerObjectData.ReflectionAmount, 1.0f);
+				updateCbuffer = true;
+			}
+			if (mKeyboard->IsKeyDown(Keys::Down) && mPSCBufferPerObjectData.ReflectionAmount > 0.0f)
+			{
+				mPSCBufferPerObjectData.ReflectionAmount -= elapsedTime;
+				mPSCBufferPerObjectData.ReflectionAmount = max(mPSCBufferPerObjectData.ReflectionAmount, 0.0f);
+				updateCbuffer = true;
+			}
+
+			if (updateCbuffer)
+			{
+				mGame->Direct3DDeviceContext()->UpdateSubresource(mPSCBufferPerObject.Get(), 0, nullptr, &mPSCBufferPerObjectData, 0, 0);
+			}
 		}
 	}
 
 	void EnvironmentMappingDemo::Draw(const GameTime& gameTime)
 	{
+		UNREFERENCED_PARAMETER(gameTime);
+
 		ID3D11DeviceContext* direct3DDeviceContext = mGame->Direct3DDeviceContext();
 		direct3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		direct3DDeviceContext->IASetInputLayout(mInputLayout);
+		direct3DDeviceContext->IASetInputLayout(mInputLayout.Get());
 
 		UINT stride = sizeof(VertexPositionTextureNormal);
 		UINT offset = 0;
-		direct3DDeviceContext->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
-		direct3DDeviceContext->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		direct3DDeviceContext->IASetVertexBuffers(0, 1, mVertexBuffer.GetAddressOf(), &stride, &offset);
+		direct3DDeviceContext->IASetIndexBuffer(mIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-		direct3DDeviceContext->VSSetShader(mVertexShader, nullptr, 0);
-		direct3DDeviceContext->PSSetShader(mPixelShader, nullptr, 0);
+		direct3DDeviceContext->VSSetShader(mVertexShader.Get(), nullptr, 0);
+		direct3DDeviceContext->PSSetShader(mPixelShader.Get(), nullptr, 0);
 
 		XMMATRIX worldMatrix = XMLoadFloat4x4(&mWorldMatrix);
 		XMMATRIX wvp = worldMatrix * mCamera->ViewProjectionMatrix();
-		XMStoreFloat4x4(&mVertexCBufferPerObjectData.WorldViewProjection, XMMatrixTranspose(wvp));
-		XMStoreFloat4x4(&mVertexCBufferPerObjectData.World, XMMatrixTranspose(worldMatrix));		
+		wvp = XMMatrixTranspose(wvp);
+		XMStoreFloat4x4(&mVSCBufferPerObjectData.WorldViewProjection, wvp);
+		XMStoreFloat4x4(&mVSCBufferPerObjectData.World, XMMatrixTranspose(worldMatrix));
+		direct3DDeviceContext->UpdateSubresource(mVSCBufferPerObject.Get(), 0, nullptr, &mVSCBufferPerObjectData, 0, 0);
 
-		mVertexCBufferPerFrameData.CameraPosition = mCamera->Position();
+		mVSCBufferPerFrameData.CameraPosition = mCamera->Position();
+		direct3DDeviceContext->UpdateSubresource(mVSCBufferPerFrame.Get(), 0, nullptr, &mVSCBufferPerFrameData, 0, 0);
 
-		direct3DDeviceContext->UpdateSubresource(mVertexCBufferPerFrame, 0, nullptr, &mVertexCBufferPerFrameData, 0, 0);
-		direct3DDeviceContext->UpdateSubresource(mVertexCBufferPerObject, 0, nullptr, &mVertexCBufferPerObjectData, 0, 0);
-		direct3DDeviceContext->UpdateSubresource(mPixelCBufferPerFrame, 0, nullptr, &mPixelCBufferPerFrameData, 0, 0);
-		direct3DDeviceContext->UpdateSubresource(mPixelCBufferPerObject, 0, nullptr, &mPixelCBufferPerObjectData, 0, 0);
-
-		static ID3D11Buffer* VSConstantBuffers[] = { mVertexCBufferPerFrame, mVertexCBufferPerObject };
+		ID3D11Buffer* VSConstantBuffers[] = { mVSCBufferPerFrame.Get(), mVSCBufferPerObject.Get() };
 		direct3DDeviceContext->VSSetConstantBuffers(0, ARRAYSIZE(VSConstantBuffers), VSConstantBuffers);
 
-		static ID3D11Buffer* PSConstantBuffers[] = { mPixelCBufferPerFrame, mPixelCBufferPerObject };
+		ID3D11Buffer* PSConstantBuffers[] = { mPSCBufferPerFrame.Get(), mPSCBufferPerObject.Get() };
 		direct3DDeviceContext->PSSetConstantBuffers(0, ARRAYSIZE(PSConstantBuffers), PSConstantBuffers);
 
-		static ID3D11ShaderResourceView* PSShaderResources[] = { mColorTexture, mEnvironmentMap };
+		ID3D11ShaderResourceView* PSShaderResources[] = { mColorTexture.Get(), mEnvironmentMap.Get() };
 		direct3DDeviceContext->PSSetShaderResources(0, ARRAYSIZE(PSShaderResources), PSShaderResources);
-		direct3DDeviceContext->PSSetSamplers(0, 1, &mTrilinearSampler);
+		direct3DDeviceContext->PSSetSamplers(0, 1, SamplerStates::TrilinearClamp.GetAddressOf());
 
-		direct3DDeviceContext->DrawIndexed(mIndexCount,0, 0);
+		direct3DDeviceContext->DrawIndexed(mIndexCount, 0, 0);
 
+		// Draw help text
 		mRenderStateHelper.SaveAll();
-
 		mSpriteBatch->Begin();
 
-		std::wostringstream helpLabel;
-
-		helpLabel << L"Reflection Amount (+Up/-Down): " << mReflectionAmount << "\n";
+		wostringstream helpLabel;
+		helpLabel << L"Reflection Amount (+Up/-Down): " << mPSCBufferPerObjectData.ReflectionAmount << "\n";
+		helpLabel << L"Toggle Grid (G)";
 	
 		mSpriteFont->DrawString(mSpriteBatch.get(), helpLabel.str().c_str(), mTextPosition);
-
 		mSpriteBatch->End();
-
 		mRenderStateHelper.RestoreAll();
 	}
 
-	void EnvironmentMappingDemo::CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const
+	void EnvironmentMappingDemo::CreateVertexBuffer(const Mesh& mesh, ID3D11Buffer** vertexBuffer) const
 	{
-		const std::vector<XMFLOAT3>& sourceVertices = mesh.Vertices();
-		std::vector<XMFLOAT3>* textureCoordinates = mesh.TextureCoordinates().at(0);
-		assert(textureCoordinates->size() == sourceVertices.size());
-		const std::vector<XMFLOAT3>& normals = mesh.Normals();
-		assert(normals.size() == sourceVertices.size());
+		const vector<XMFLOAT3>& sourceVertices = mesh.Vertices();
+		const vector<XMFLOAT3>& sourceNormals = mesh.Normals();
+		const auto& sourceUVs = mesh.TextureCoordinates().at(0);
 
-		std::vector<VertexPositionTextureNormal> vertices;
+		vector<VertexPositionTextureNormal> vertices;
 		vertices.reserve(sourceVertices.size());
 		for (UINT i = 0; i < sourceVertices.size(); i++)
 		{
-			XMFLOAT3 position = sourceVertices.at(i);
-			XMFLOAT3 uv = textureCoordinates->at(i);
-			XMFLOAT3 normal = normals.at(i);
+			const XMFLOAT3& position = sourceVertices.at(i);
+			const XMFLOAT3& uv = sourceUVs->at(i);
+			const XMFLOAT3& normal = sourceNormals.at(i);
+
 			vertices.push_back(VertexPositionTextureNormal(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y), normal));
 		}
-
-		D3D11_BUFFER_DESC vertexBufferDesc;
-		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTextureNormal) * vertices.size();
+		D3D11_BUFFER_DESC vertexBufferDesc = { 0 };
+		vertexBufferDesc.ByteWidth = sizeof(VertexPositionTextureNormal) * static_cast<UINT>(vertices.size());
 		vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
-		D3D11_SUBRESOURCE_DATA vertexSubResourceData;
-		ZeroMemory(&vertexSubResourceData, sizeof(vertexSubResourceData));
+		D3D11_SUBRESOURCE_DATA vertexSubResourceData = { 0 };
 		vertexSubResourceData.pSysMem = &vertices[0];
 		ThrowIfFailed(mGame->Direct3DDevice()->CreateBuffer(&vertexBufferDesc, &vertexSubResourceData, vertexBuffer), "ID3D11Device::CreateBuffer() failed.");
 	}

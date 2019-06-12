@@ -1,30 +1,25 @@
 #pragma once
 
+#include <wrl.h>
+#include <d3d11_2.h>
 #include "DrawableGameComponent.h"
-
-using namespace Library;
 
 namespace Rendering
 {
-	class ColoredTriangleDemo : public DrawableGameComponent
+	class ColoredTriangleDemo final : public Library::DrawableGameComponent
 	{
-		RTTI_DECLARATIONS(ColoredTriangleDemo, DrawableGameComponent)
+		RTTI_DECLARATIONS(ColoredTriangleDemo, Library::DrawableGameComponent)
 
 	public:
-		ColoredTriangleDemo(Game& game, Camera& camera);
-		~ColoredTriangleDemo();
-
-		ColoredTriangleDemo() = delete;
-		ColoredTriangleDemo(const ColoredTriangleDemo& rhs) = delete;
-		ColoredTriangleDemo& operator=(const ColoredTriangleDemo& rhs) = delete;
+		ColoredTriangleDemo(Library::Game& game);
 
 		virtual void Initialize() override;
-		virtual void Draw(const GameTime& gameTime) override;
+		virtual void Draw(const Library::GameTime& gameTime) override;
 
 	private:
-		ID3D11VertexShader* mVertexShader;		
-		ID3D11PixelShader* mPixelShader;
-		ID3D11InputLayout* mInputLayout;
-		ID3D11Buffer* mVertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
+		Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
 	};
 }
