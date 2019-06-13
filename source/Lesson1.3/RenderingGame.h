@@ -1,25 +1,22 @@
 #pragma once
 
-#include "Game.h"
 #include <windows.h>
 #include <functional>
+#include <DirectXColors.h>
+#include "Game.h"
 
 namespace Library
 {
 	class KeyboardComponent;
-	class MouseComponent;
 	class GamePadComponent;
-	class FpsComponent;
 }
 
 namespace Rendering
 {
-	class PointDemo;
-	
 	class RenderingGame final : public Library::Game
 	{
 	public:
-		RenderingGame(std::function<void*()> getWindowCallback, std::function<void(SIZE&)> getRenderTargetSizeCallback);
+		RenderingGame(std::function<void* ()> getWindowCallback, std::function<void(SIZE&)> getRenderTargetSizeCallback);
 
 		virtual void Initialize() override;
 		virtual void Update(const Library::GameTime& gameTime) override;
@@ -28,12 +25,9 @@ namespace Rendering
 		void Exit();
 
 	private:
-		static const DirectX::XMVECTORF32 BackgroundColor;
+		inline static const DirectX::XMVECTORF32 BackgroundColor{ DirectX::Colors::CornflowerBlue };
 
 		std::shared_ptr<Library::KeyboardComponent> mKeyboard;
-		std::shared_ptr<Library::MouseComponent> mMouse;
 		std::shared_ptr<Library::GamePadComponent> mGamePad;
-		std::shared_ptr<Library::FpsComponent> mFpsComponent;
-		std::shared_ptr<PointDemo> mPointDemo;
 	};
 }

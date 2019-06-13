@@ -7,15 +7,14 @@
 namespace Library
 {
 	class KeyboardComponent;
-	class FpsComponent;	
 }
 
 namespace Rendering
 {
-    class RenderingGame : public Library::Game
-    {
-    public:
-		RenderingGame(std::function<void*()> getWindowCallback, std::function<void(SIZE&)> getRenderTargetSizeCallback);
+	class RenderingGame : public Library::Game
+	{
+	public:
+		RenderingGame(std::function<void* ()> getWindowCallback, std::function<void(SIZE&)> getRenderTargetSizeCallback);
 
 		virtual void Initialize() override;
 		virtual void Update(const Library::GameTime& gameTime) override;
@@ -23,10 +22,9 @@ namespace Rendering
 
 		void Exit();
 
-    private:
-		static const DirectX::XMVECTORF32 BackgroundColor;
+	private:
+		inline static const DirectX::XMVECTORF32 BackgroundColor = DirectX::Colors::CornflowerBlue;
 
 		std::shared_ptr<Library::KeyboardComponent> mKeyboard;
-		std::shared_ptr<Library::FpsComponent> mFpsComponent;
-    };
+	};
 }

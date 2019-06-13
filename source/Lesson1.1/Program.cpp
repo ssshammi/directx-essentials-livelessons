@@ -36,7 +36,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR command
 #endif
 
 	wstring windowClassName = L"RenderingClass";
-	InitializeWindow(instance, windowClassName, L"Hello, Rendering!", showCommand);
+	InitializeWindow(instance, windowClassName, L"DirectX Essentials", showCommand);
 	InitializeDirectX();
 
 	MSG message = { 0 };

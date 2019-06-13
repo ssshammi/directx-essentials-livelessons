@@ -12,12 +12,10 @@
     <ClCompile Include="PointDemo.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="RenderingGame.cpp" />
-    <ClCompile Include="pch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PointDemo.h" />
     <ClInclude Include="RenderingGame.h" />
-    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PointDemoPS.hlsl">

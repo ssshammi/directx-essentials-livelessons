@@ -96,13 +96,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Library.Shared", "..\source
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Library.Desktop", "..\source\Library.Desktop\Library.Desktop.vcxproj", "{8F60BA9C-AAB6-47E4-BD36-DCDEBF4D9AE6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModelPipeline", "..\source\Tools\ModelPipeline\ModelPipeline.vcxproj", "{A178C969-D639-489D-9A19-CD24C2930F9F}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Properties", "Properties", "{3CBFAC7C-8F5B-42E8-BBBA-7BD9D99C1CE1}"
 	ProjectSection(SolutionItems) = preProject
 		CustomBuildStep.props = CustomBuildStep.props
 		Shared.props = Shared.props
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModelPipeline", "..\source\Tools\ModelPipeline\ModelPipeline.vcxproj", "{A178C969-D639-489D-9A19-CD24C2930F9F}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
