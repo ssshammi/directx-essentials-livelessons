@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Light.h"
+#include "VectorHelper.h"
 
 namespace Library
 {
@@ -9,7 +10,11 @@ namespace Library
 		RTTI_DECLARATIONS(DirectionalLight, Light)
 
 	public:
-		DirectionalLight(Game& game);
+		DirectionalLight() = default;
+		DirectionalLight(const DirectionalLight&) = default;
+		DirectionalLight& operator=(const DirectionalLight&) = default;
+		DirectionalLight& operator=(DirectionalLight&&) = default;
+		DirectionalLight(DirectionalLight&&) = default;
 		virtual ~DirectionalLight() = default;
 
 		const DirectX::XMFLOAT3& Direction() const;
@@ -26,9 +31,8 @@ namespace Library
 		void ApplyRotation(const DirectX::XMFLOAT4X4& transform);
 
 	protected:
-		DirectX::XMFLOAT3 mDirection;
-		DirectX::XMFLOAT3 mUp;
-		DirectX::XMFLOAT3 mRight;
+		DirectX::XMFLOAT3 mDirection{ Vector3Helper::Forward };
+		DirectX::XMFLOAT3 mUp{ Vector3Helper::Up };
+		DirectX::XMFLOAT3 mRight{ Vector3Helper::Right };
 	};
 }
-

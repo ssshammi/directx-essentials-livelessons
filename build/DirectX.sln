@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Lesson1_1", "..\source\Lesson1.1\Lesson1_1.vcxproj", "{D2406261-E7E0-4F61-8F86-9C50B4F284DD}"
 EndProject
@@ -97,6 +97,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Library.Desktop", "..\source\Library.Desktop\Library.Desktop.vcxproj", "{8F60BA9C-AAB6-47E4-BD36-DCDEBF4D9AE6}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModelPipeline", "..\source\Tools\ModelPipeline\ModelPipeline.vcxproj", "{A178C969-D639-489D-9A19-CD24C2930F9F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Properties", "Properties", "{3CBFAC7C-8F5B-42E8-BBBA-7BD9D99C1CE1}"
+	ProjectSection(SolutionItems) = preProject
+		CustomBuildStep.props = CustomBuildStep.props
+		Shared.props = Shared.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -276,5 +282,8 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A178C969-D639-489D-9A19-CD24C2930F9F} = {67DD0724-C093-4DE4-ADE2-83C11C0278F7}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {408ECEC4-0638-440D-824C-A07D64FC75C4}
 	EndGlobalSection
 EndGlobal

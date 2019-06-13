@@ -1,98 +1,51 @@
 #include "pch.h"
+#include "Utility.h"
+
+using namespace std;
 
 namespace Library
 {
-	void Utility::GetFileName(const std::string& inputPath, std::string& filename)
+	void Utility::LoadBinaryFile(const wstring& filename, vector<char>& data)
 	{
-		std::string fullPath(inputPath);
-		std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
-
-		std::string::size_type lastSlashIndex = fullPath.find_last_of('/');
-
-		if (lastSlashIndex == std::string::npos)
-		{
-			filename = fullPath;
-		}
-		else
-		{
-			filename = fullPath.substr(lastSlashIndex + 1, fullPath.size() - lastSlashIndex - 1);
-		}
-	}
-
-	void Utility::GetDirectory(const std::string& inputPath, std::string& directory)
-	{
-		std::string fullPath(inputPath);
-		std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
-
-		std::string::size_type lastSlashIndex = fullPath.find_last_of('/');
-
-		if (lastSlashIndex == std::string::npos)
-		{
-			directory = "";
-		}
-		else
-		{
-			directory = fullPath.substr(0, lastSlashIndex);
-		}
-	}
-
-	void Utility::GetFileNameAndDirectory(const std::string& inputPath, std::string& directory, std::string& filename)
-	{
-		std::string fullPath(inputPath);
-		std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
-
-		std::string::size_type lastSlashIndex = fullPath.find_last_of('/');
-
-		if (lastSlashIndex == std::string::npos)
-		{
-			directory = "";
-			filename = fullPath;
-		}
-		else
-		{
-			directory = fullPath.substr(0, lastSlashIndex);
-			filename = fullPath.substr(lastSlashIndex + 1, fullPath.size() - lastSlashIndex - 1);
-		}
-	}
-
-	void Utility::LoadBinaryFile(const std::wstring& filename, std::vector<char>& data)
-	{
-		std::ifstream file(filename.c_str(), std::ios::binary);
+		ifstream file(filename.c_str(), ios::binary);
 		if (!file.good())
 		{
-			throw std::exception("Could not open file.");
+			throw exception("Could not open file.");
 		}
 
-		file.seekg(0, std::ios::end);
-		UINT size = (UINT)file.tellg();
+		file.seekg(0, ios::end);
+		uint32_t size = (uint32_t)file.tellg();
 
 		if (size > 0)
 		{
 			data.resize(size);
-			file.seekg(0, std::ios::beg);
+			file.seekg(0, ios::beg);
 			file.read(&data.front(), size);
 		}
 
 		file.close();
 	}
 
-	void Utility::ToWideString(const std::string& source, std::wstring& dest)
+#pragma warning(push)
+#pragma warning(disable: 4996)
+	void Utility::ToWideString(const string& source, wstring& dest)
 	{
-		dest = std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(source);
+		dest = wstring_convert<codecvt_utf8<wchar_t>>().from_bytes(source);
 	}
 
-	std::wstring Utility::ToWideString(const std::string& source)
+	wstring Utility::ToWideString(const string& source)
 	{
-		return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(source);
+		return wstring_convert<codecvt_utf8<wchar_t>>().from_bytes(source);
 	}
 
-	void Utility::Totring(const std::wstring& source, std::string& dest)
+	void Utility::Totring(const wstring& source, string& dest)
 	{
-		dest = std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(source);
+		dest = wstring_convert<codecvt_utf8<wchar_t>>().to_bytes(source);
 	}
 
-	std::string Utility::ToString(const std::wstring& source)
+	string Utility::ToString(const wstring& source)
 	{
-		return std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(source);
+		return wstring_convert<codecvt_utf8<wchar_t>>().to_bytes(source);
 	}
+#pragma warning(pop)
 }

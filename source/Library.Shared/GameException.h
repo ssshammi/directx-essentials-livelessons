@@ -9,7 +9,7 @@ namespace Library
 	class GameException : public std::exception
 	{
 	public:
-		GameException(const char* const& message, HRESULT hr = S_OK);
+		GameException(const char* const message, HRESULT hr = S_OK);
 
 		HRESULT HR() const;
 		std::wstring whatw() const;
@@ -18,7 +18,7 @@ namespace Library
 		HRESULT mHR;
 	};
 
-	inline void ThrowIfFailed(HRESULT hr, const char* const& message = "")
+	inline void ThrowIfFailed(HRESULT hr, const char* const message = "")
 	{
 		if (FAILED(hr))
 		{

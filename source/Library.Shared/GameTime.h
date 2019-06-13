@@ -7,8 +7,6 @@ namespace Library
 	class GameTime final
 	{
 	public:
-		GameTime();
-
 		const std::chrono::high_resolution_clock::time_point& CurrentTime() const;
 		void SetCurrentTime(const std::chrono::high_resolution_clock::time_point& currentTime);
 
@@ -23,7 +21,7 @@ namespace Library
 
 	private:
 		std::chrono::high_resolution_clock::time_point mCurrentTime;
-		std::chrono::milliseconds mTotalGameTime;
-		std::chrono::milliseconds mElapsedGameTime;
+		std::chrono::milliseconds mTotalGameTime{ 0 };
+		std::chrono::milliseconds mElapsedGameTime{ 0 };
 	};
 }

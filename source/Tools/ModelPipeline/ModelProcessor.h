@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include "Model.h"
+#include <memory>
 
 struct aiNode;
 
@@ -13,11 +13,10 @@ namespace Library
 
 namespace ModelPipeline
 {
-    class ModelProcessor
+    struct ModelProcessor final
     {
-    public:
 		ModelProcessor() = delete;
 
-		static Library::Model LoadModel(const std::string& filename, bool flipUVs = false);
+		static Library::Model LoadModel(const std::string& filename, bool flipUVs = false);		
     };
 }

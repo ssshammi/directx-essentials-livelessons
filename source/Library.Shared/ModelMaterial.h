@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <gsl\gsl>
 
 namespace Library
 {
@@ -24,20 +25,10 @@ namespace Library
         End
     };
 
-	struct ModelMaterialData
+	struct ModelMaterialData final
 	{
 		std::string Name;
-		std::map<TextureType, std::vector<std::string>*> Textures;
-
-		ModelMaterialData() = default;
-		ModelMaterialData(const ModelMaterialData&) = delete;
-		ModelMaterialData& operator=(const ModelMaterialData&) = delete;
-		ModelMaterialData(ModelMaterialData&& rhs);
-		ModelMaterialData& operator=(ModelMaterialData&& rhs);
-		~ModelMaterialData();
-
-	private:
-		void Clear();
+		std::map<TextureType, std::vector<std::string>> Textures;
 	};
 
     class ModelMaterial
@@ -45,19 +36,22 @@ namespace Library
     public:
 		ModelMaterial(Model& model, InputStreamHelper& streamHelper);
 		ModelMaterial(Model& model, ModelMaterialData&& modelMaterialData);
-		ModelMaterial(ModelMaterial&& rhs);
-		ModelMaterial& operator=(ModelMaterial&& rhs);
+		ModelMaterial(const ModelMaterial&) = default;
+		ModelMaterial(ModelMaterial&&) = default;
+		ModelMaterial& operator=(const ModelMaterial&) = default;
+		ModelMaterial& operator=(ModelMaterial&&) = default;
+		~ModelMaterial() = default;
 
         Model& GetModel();
         const std::string& Name() const;
-        const std::map<TextureType, std::vector<std::string>*>& Textures() const;
+        const std::map<TextureType, std::vector<std::string>>& Textures() const;
 
 		void Save(OutputStreamHelper& streamHelper) const;
 
     private:
 		void Load(InputStreamHelper& streamHelper);
 
-        Model* mModel;
+        gsl::not_null<Model*> mModel;
 		ModelMaterialData mData;
     };
 }

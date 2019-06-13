@@ -11,12 +11,12 @@ namespace Library
         RTTI_DECLARATIONS(OrthographicCamera, Camera)
 
     public:
-        OrthographicCamera(Game& game);
-		OrthographicCamera(Game& game, float viewWidth, float viewHeight, float nearPlaneDistance, float farPlaneDistance);
+		explicit OrthographicCamera(Game& game, float viewWidth = DefaultViewWidth, float viewHeight = DefaultViewHeight, float nearPlaneDistance = DefaultNearPlaneDistance, float farPlaneDistance = DefaultFarPlaneDistance);
+		OrthographicCamera(const OrthographicCamera&) = default;
+		OrthographicCamera(OrthographicCamera&&) = default;
+		OrthographicCamera& operator=(const OrthographicCamera&) = default;
+		OrthographicCamera& operator=(OrthographicCamera&&) = default;
 		virtual ~OrthographicCamera() = default;
-
-		OrthographicCamera(const OrthographicCamera&) = delete;
-		OrthographicCamera& operator=(const OrthographicCamera&) = delete;
 
 		float ViewWidth() const;
 		void SetViewWidth(float viewWidth);
@@ -26,8 +26,8 @@ namespace Library
 
         virtual void UpdateProjectionMatrix() override;
 
-		static const float DefaultViewWidth;
-		static const float DefaultViewHeight;
+		inline static const float DefaultViewWidth{ 100.0f };
+		inline static const float DefaultViewHeight{ 100.0f };
 
     protected:
 		float mViewWidth;

@@ -1,10 +1,7 @@
 #pragma once
 
-#include <string>
-#include <vector>
-#include <cstdint>
-#include <DirectXMath.h>
-#include <d3d11_2.h>
+#include <gsl\gsl>
+#include <d3d11.h>
 
 namespace Library
 {
@@ -14,7 +11,7 @@ namespace Library
 	class OutputStreamHelper;
 	class InputStreamHelper;
 
-	struct MeshData
+	struct MeshData final
 	{
 		std::shared_ptr<ModelMaterial> Material;
 		std::string Name;
@@ -22,31 +19,22 @@ namespace Library
 		std::vector<DirectX::XMFLOAT3> Normals;
 		std::vector<DirectX::XMFLOAT3> Tangents;
 		std::vector<DirectX::XMFLOAT3> BiNormals;
-		std::vector<std::vector<DirectX::XMFLOAT3>*> TextureCoordinates;
-		std::vector<std::vector<DirectX::XMFLOAT4>*> VertexColors;
-		std::uint32_t FaceCount;
+		std::vector<std::vector<DirectX::XMFLOAT3>> TextureCoordinates;
+		std::vector<std::vector<DirectX::XMFLOAT4>> VertexColors;
+		std::uint32_t FaceCount{ 0 };
 		std::vector<std::uint32_t> Indices;
-
-		MeshData();
-		MeshData(const MeshData&) = delete;
-		MeshData& operator=(const MeshData&) = delete;
-		MeshData(MeshData&& rhs);
-		MeshData& operator=(MeshData&& rhs);
-		~MeshData();
-
-	private:
-		void Clear();
 	};
 
-    class Mesh
+    class Mesh final
     {
     public:
 		Mesh(Library::Model& model, InputStreamHelper& streamHelper);
 		Mesh(Library::Model& model, MeshData&& meshData);
-		Mesh(const Mesh&) = delete;
-		Mesh& operator=(const Mesh&) = delete;
-		Mesh(Mesh&& rhs);
-		Mesh& operator=(Mesh&& rhs);
+		Mesh(const Mesh&) = default;
+		Mesh(Mesh&&) = default;
+		Mesh& operator=(const Mesh&) = default;
+		Mesh& operator=(Mesh&&) = default;
+		~Mesh() = default;
 
 		Library::Model& GetModel();
         std::shared_ptr<ModelMaterial> GetMaterial();
@@ -56,18 +44,18 @@ namespace Library
 		const std::vector<DirectX::XMFLOAT3>& Normals() const;
 		const std::vector<DirectX::XMFLOAT3>& Tangents() const;
 		const std::vector<DirectX::XMFLOAT3>& BiNormals() const;
-		const std::vector<std::vector<DirectX::XMFLOAT3>*>& TextureCoordinates() const;
-		const std::vector<std::vector<DirectX::XMFLOAT4>*>& VertexColors() const;
+		const std::vector<std::vector<DirectX::XMFLOAT3>>& TextureCoordinates() const;
+		const std::vector<std::vector<DirectX::XMFLOAT4>>& VertexColors() const;
 		std::uint32_t FaceCount() const;
 		const std::vector<std::uint32_t>& Indices() const;
 
-        void CreateIndexBuffer(ID3D11Device& device, ID3D11Buffer** indexBuffer);
+        void CreateIndexBuffer(ID3D11Device& device, gsl::not_null<ID3D11Buffer**> indexBuffer);
 		void Save(OutputStreamHelper& streamHelper) const;
 
     private:
 		void Load(InputStreamHelper& streamHelper);
 
-        Library::Model* mModel;
+        gsl::not_null<Library::Model*> mModel;
 		MeshData mData;
     };
 }

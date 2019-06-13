@@ -1,19 +1,20 @@
 #include "pch.h"
+#include "Camera.h"
+#include "VectorHelper.h"
 
+using namespace std;
 using namespace DirectX;
 
 namespace Library
 {
 	RTTI_DEFINITIONS(Camera)
 
-	const float Camera::DefaultNearPlaneDistance = 0.01f;
-	const float Camera::DefaultFarPlaneDistance = 10000.0f;
-
 	Camera::Camera(Game& game, float nearPlaneDistance, float farPlaneDistance) :
 		GameComponent(game),
 		mNearPlaneDistance(nearPlaneDistance), mFarPlaneDistance(farPlaneDistance)
 	{
 	}
+
 	const XMFLOAT3& Camera::Position() const
 	{
 		return mPosition;
@@ -59,9 +60,21 @@ namespace Library
 		return mNearPlaneDistance;
 	}
 
+	void Camera::SetNearPlaneDistance(float distance)
+	{
+		mNearPlaneDistance = distance;
+		mProjectionMatrixDataDirty = true;
+	}
+
 	float Camera::FarPlaneDistance() const
 	{
 		return mFarPlaneDistance;
+	}
+
+	void Camera::SetFarPlaneDistance(float distance)
+	{
+		mFarPlaneDistance = distance;
+		mProjectionMatrixDataDirty = true;
 	}
 
 	XMMATRIX Camera::ViewMatrix() const
@@ -82,6 +95,26 @@ namespace Library
 		return XMMatrixMultiply(viewMatrix, projectionMatrix);
 	}
 
+	const vector<function<void()>>& Camera::ViewMatrixUpdatedCallbacks() const
+	{
+		return mViewMatrixUpdatedCallbacks;
+	}
+
+	void Camera::AddViewMatrixUpdatedCallback(function<void()> callback)
+	{
+		mViewMatrixUpdatedCallbacks.push_back(callback);
+	}
+
+	const vector<function<void()>>& Camera::ProjectionMatrixUpdatedCallbacks() const
+	{
+		return mProjectionMatrixUpdatedCallbacks;
+	}
+
+	void Camera::AddProjectionMatrixUpdatedCallback(function<void()> callback)
+	{
+		mProjectionMatrixUpdatedCallbacks.push_back(callback);
+	}
+
 	void Camera::SetPosition(float x, float y, float z)
 	{
 		XMVECTOR position = XMVectorSet(x, y, z, 1.0f);
@@ -91,11 +124,13 @@ namespace Library
 	void Camera::SetPosition(FXMVECTOR position)
 	{
 		XMStoreFloat3(&mPosition, position);
+		mViewMatrixDataDirty = true;
 	}
 
 	void Camera::SetPosition(const XMFLOAT3& position)
 	{
 		mPosition = position;
+		mViewMatrixDataDirty = true;
 	}
 
 	void Camera::Reset()
@@ -104,6 +139,7 @@ namespace Library
 		mDirection = Vector3Helper::Forward;
 		mUp = Vector3Helper::Up;
 		mRight = Vector3Helper::Right;
+		mViewMatrixDataDirty = true;
 
 		UpdateViewMatrix();
 	}
@@ -114,11 +150,12 @@ namespace Library
 		Reset();
 	}
 
-	void Camera::Update(const GameTime& gameTime)
+	void Camera::Update(const GameTime&)
 	{
-		UNREFERENCED_PARAMETER(gameTime);
-
-		UpdateViewMatrix();
+		if (mViewMatrixDataDirty)
+		{
+			UpdateViewMatrix();
+		}
 	}
 
 	void Camera::UpdateViewMatrix()
@@ -129,6 +166,13 @@ namespace Library
 
 		XMMATRIX viewMatrix = XMMatrixLookToRH(eyePosition, direction, upDirection);
 		XMStoreFloat4x4(&mViewMatrix, viewMatrix);
+
+		for (auto& callback : mViewMatrixUpdatedCallbacks)
+		{
+			callback();
+		}
+
+		mViewMatrixDataDirty = false;
 	}
 
 	void Camera::ApplyRotation(CXMMATRIX transform)
@@ -148,6 +192,8 @@ namespace Library
 		XMStoreFloat3(&mDirection, direction);
 		XMStoreFloat3(&mUp, up);
 		XMStoreFloat3(&mRight, right);
+
+		mViewMatrixDataDirty = true;
 	}
 
 	void Camera::ApplyRotation(const XMFLOAT4X4& transform)

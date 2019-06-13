@@ -2,6 +2,8 @@
 
 #include "PerspectiveCamera.h"
 #include "GamePadComponent.h"
+#include <functional>
+#include <vector>
 
 namespace Library
 {	
@@ -13,12 +15,11 @@ namespace Library
 		RTTI_DECLARATIONS(FirstPersonCamera, PerspectiveCamera)
 
     public:
-        explicit FirstPersonCamera(Game& game);
-        FirstPersonCamera(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance);
-		FirstPersonCamera(const FirstPersonCamera&) = delete;
-		FirstPersonCamera& operator=(const FirstPersonCamera&) = delete;
-		FirstPersonCamera(FirstPersonCamera&&) = delete;
-		FirstPersonCamera& operator=(FirstPersonCamera&&) = delete;
+        explicit FirstPersonCamera(Game& game, float fieldOfView = DefaultFieldOfView, float aspectRatio = DefaultAspectRatio, float nearPlaneDistance = DefaultNearPlaneDistance, float farPlaneDistance = DefaultFarPlaneDistance);
+		FirstPersonCamera(const FirstPersonCamera&) = default;
+		FirstPersonCamera& operator=(const FirstPersonCamera&) = default;
+		FirstPersonCamera(FirstPersonCamera&&) = default;
+		FirstPersonCamera& operator=(FirstPersonCamera&&) = default;
 		virtual ~FirstPersonCamera() = default;
 
 		GamePadComponent* GetGamePad() const;
@@ -34,15 +35,24 @@ namespace Library
         float& RotationRate();
         float& MovementRate();
         
+		const std::vector<std::function<void()>>& PositionUpdatedCallbacks() const;
+		void AddPositionUpdatedCallback(std::function<void()> callback);
+
+		virtual void SetPosition(float x, float y, float z) override;
+		virtual void SetPosition(DirectX::FXMVECTOR position) override;
+		virtual void SetPosition(const DirectX::XMFLOAT3& position) override;
+
 		virtual void Initialize() override;
         virtual void Update(const GameTime& gameTime) override;
 
-		static const float DefaultMouseSensitivity;
-        static const float DefaultRotationRate;
-        static const float DefaultMovementRate;
+		inline static const float DefaultMouseSensitivity{ 0.1f };
+		inline static const float DefaultRotationRate{ DirectX::XMConvertToRadians(100.0f) };
+		inline static const float DefaultMovementRate{ 100.0f };
 
 	private:
 		void UpdatePosition(const DirectX::XMFLOAT2& movementAmount, const DirectX::XMFLOAT2& rotationAmount, const GameTime& gameTime);
+		void InvokePositionUpdatedCallbacks();
+		
 		inline bool IsGamePadConnected(DirectX::GamePad::State& gamePadState)
 		{
 			if (mGamePad != nullptr)
@@ -55,12 +65,12 @@ namespace Library
 		}
 
     protected:
-		GamePadComponent* mGamePad;
-		KeyboardComponent* mKeyboard;
-		MouseComponent* mMouse;
-		float mMouseSensitivity;
-		float mRotationRate;
-        float mMovementRate;		
+		GamePadComponent* mGamePad{ nullptr };
+		KeyboardComponent* mKeyboard{ nullptr };
+		MouseComponent* mMouse{ nullptr };
+		float mMouseSensitivity{ DefaultMouseSensitivity };
+		float mRotationRate{ DefaultRotationRate };
+        float mMovementRate{ DefaultMovementRate };
+		std::vector<std::function<void()>> mPositionUpdatedCallbacks;
     };
 }
-

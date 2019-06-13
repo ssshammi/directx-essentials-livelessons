@@ -4,13 +4,14 @@
 
 namespace Library
 {
-	class Vector2Helper
+	class Vector2Helper final
 	{
 	public:
 		static const DirectX::XMFLOAT2 Zero;
 		static const DirectX::XMFLOAT2 One;
 
 		static std::string ToString(const DirectX::XMFLOAT2& vector);
+		static bool Equals(const DirectX::XMFLOAT2& lhs, const DirectX::XMFLOAT2& rhs);
 
 		Vector2Helper() = delete;
 		Vector2Helper(const Vector2Helper&) = delete;
@@ -20,7 +21,7 @@ namespace Library
 		~Vector2Helper() = default;
 	};
 
-	class Vector3Helper
+	class Vector3Helper final
 	{
 	public:
 		static const DirectX::XMFLOAT3 Zero;
@@ -33,6 +34,8 @@ namespace Library
 		static const DirectX::XMFLOAT3 Left;
 
 		static std::string ToString(const DirectX::XMFLOAT3& vector);
+		static DirectX::XMFLOAT3 ToFloat3(const DirectX::XMFLOAT4& vector);
+		static bool Equals(const DirectX::XMFLOAT3& lhs, const DirectX::XMFLOAT3& rhs);
 
 		Vector3Helper() = delete;
 		Vector3Helper(const Vector3Helper&) = delete;
@@ -42,13 +45,14 @@ namespace Library
 		~Vector3Helper() = default;
 	};
 
-	class Vector4Helper
+	class Vector4Helper final
 	{
 	public:
 		static const DirectX::XMFLOAT4 Zero;
 		static const DirectX::XMFLOAT4 One;
 
 		static std::string ToString(const DirectX::XMFLOAT4& vector);
+		static bool Equals(const DirectX::XMFLOAT4& lhs, const DirectX::XMFLOAT4& rhs);
 
 		Vector4Helper() = delete;
 		Vector4Helper(const Vector3Helper&) = delete;
@@ -58,3 +62,5 @@ namespace Library
 		~Vector4Helper() = default;
 	};
 }
+
+#include "VectorHelper.inl"

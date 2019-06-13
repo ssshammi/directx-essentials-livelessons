@@ -1,7 +1,8 @@
 #pragma once
 
 #include "GameComponent.h"
-#include <Keyboard.h>
+#include "Utility.h"
+#include <DirectXTK\Keyboard.h>
 #include <memory>
 
 namespace Library
@@ -195,6 +196,10 @@ namespace Library
 		
 		KeyboardComponent(Game& game);
 		KeyboardComponent(const KeyboardComponent&) = delete;
+		KeyboardComponent(KeyboardComponent&&) = default;
+		KeyboardComponent& operator=(const KeyboardComponent&) = delete;		
+		KeyboardComponent& operator=(KeyboardComponent&&) = default;
+		~KeyboardComponent() = default;
 
 		const DirectX::Keyboard::State& CurrentState() const;
 		const DirectX::Keyboard::State& LastState() const;
@@ -216,4 +221,39 @@ namespace Library
 		DirectX::Keyboard::State mCurrentState;
 		DirectX::Keyboard::State mLastState;
 	};
+
+	template <typename T>
+	void UpdateValueWithKeyboard(const KeyboardComponent& keyboard, const Keys increaseKey, const Keys decreaseKey, T& value, const T& delta, std::function<void(const T&)> updateFunc = nullptr, const T& minValue = std::numeric_limits<T>::lowest(), const T& maxValue = std::numeric_limits<T>::max())
+	{
+		auto increasePredicate = [&]() -> bool
+		{
+			return (keyboard.IsKeyDown(increaseKey));
+		};
+
+		auto decreasePredicate = [&]() -> bool
+		{
+			return (keyboard.IsKeyDown(decreaseKey));
+		};
+
+		UpdateValue(increasePredicate, decreasePredicate, value, delta, updateFunc, minValue, maxValue);
+	}
+
+	template <typename T>
+	void IncrementEnumValue(const KeyboardComponent& keyboard, const Keys increaseKey, T& value, std::function<void(T)> updateFunc, T maxValue, T minValue = T(0), bool wrap = true)
+	{
+		if (keyboard.WasKeyPressedThisFrame(increaseKey))
+		{
+			T increasedValue = T(static_cast<int>(value) + 1);
+			if (increasedValue >= maxValue)
+			{
+				increasedValue = (wrap ? minValue : value);
+			}
+
+			if (value != increasedValue)
+			{
+				value = increasedValue;
+				updateFunc(value);
+			}
+		}
+	}
 }

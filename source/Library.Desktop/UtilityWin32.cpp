@@ -1,14 +1,14 @@
 #include "pch.h"
 #include "UtilityWin32.h"
-#include <windows.h>
-#include <string>
-#include <Shlwapi.h>
 
 using namespace std;
+using namespace std::filesystem;
 
 namespace Library
 {
-	void UtilityWin32::InitializeWindow(WNDCLASSEX& window, HWND& windowHandle, HINSTANCE instance, const wstring& className, const wstring windowTitle, const SIZE& renderTargetSize, int showCommand)
+	vector<shared_ptr<UtilityWin32::WndProcHandler>> UtilityWin32::sWndProcHandlers;
+
+	void UtilityWin32::InitializeWindow(WNDCLASSEX& window, HWND& windowHandle, HINSTANCE instance, const wstring& className, const wstring& windowTitle, const SIZE& renderTargetSize, int showCommand)
 	{
 		ZeroMemory(&window, sizeof(window));
 		window.cbSize = sizeof(WNDCLASSEX);
@@ -44,8 +44,21 @@ namespace Library
 		return center;
 	}
 
+	path UtilityWin32::ExecutableDirectory()
+	{
+		int argCount;
+		LPWSTR* args = CommandLineToArgvW(GetCommandLine(), &argCount);
+		assert(args != nullptr);
+		return path(args[0]).parent_path();
+	}
+
 	LRESULT WINAPI UtilityWin32::WndProc(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam)
 	{
+		for (auto& wndProcHandler : sWndProcHandlers)
+		{
+			(*wndProcHandler)(windowHandle, message, wParam, lParam);
+		}
+
 		switch (message)
 		{
 		case WM_DESTROY:
@@ -83,34 +96,18 @@ namespace Library
 		return DefWindowProc(windowHandle, message, wParam, lParam);
 	}
 
-	string UtilityWin32::CurrentDirectory()
+	const vector<shared_ptr<UtilityWin32::WndProcHandler>>& UtilityWin32::WndProcHandlers()
 	{
-		WCHAR buffer[MAX_PATH];
-		GetCurrentDirectory(MAX_PATH, buffer);
-		wstring currentDirectoryW(buffer);
-
-		return string(currentDirectoryW.begin(), currentDirectoryW.end());
+		return sWndProcHandlers;
 	}
 
-	wstring UtilityWin32::ExecutableDirectory()
+	void UtilityWin32::AddWndProcHandler(shared_ptr<WndProcHandler> handler)
 	{
-		WCHAR buffer[MAX_PATH];
-		GetModuleFileName(nullptr, buffer, MAX_PATH);
-		PathRemoveFileSpec(buffer);
-
-		return wstring(buffer);
+		sWndProcHandlers.push_back(handler);
 	}
 
-	void UtilityWin32::PathJoin(wstring& dest, const wstring& sourceDirectory, const wstring& sourceFile)
+	void UtilityWin32::RemoveWndProcHandler(shared_ptr<WndProcHandler> handler)
 	{
-		WCHAR buffer[MAX_PATH];
-
-		PathCombine(buffer, sourceDirectory.c_str(), sourceFile.c_str());
-		dest = buffer;
-	}
-
-	void UtilityWin32::GetPathExtension(const wstring& source, wstring& dest)
-	{
-		dest = PathFindExtension(source.c_str());
+		sWndProcHandlers.erase(find(sWndProcHandlers.cbegin(), sWndProcHandlers.cend(), handler));
 	}
 }

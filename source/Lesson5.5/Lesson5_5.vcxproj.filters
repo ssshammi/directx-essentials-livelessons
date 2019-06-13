@@ -34,13 +34,13 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="Content\Models\SpotLightProxy.obj.bin">
       <Filter>Content\Models</Filter>
     </None>
     <None Include="Content\Models\Sphere.obj.bin">
       <Filter>Content\Models</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Content\Textures\Checkerboard.png">

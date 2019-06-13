@@ -1,27 +1,31 @@
 #pragma once
 
-#include <wrl.h>
-#include <d3d11_2.h>
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <winrt\Windows.Foundation.h>
+#include <d3d11.h>
 #include <DirectXMath.h>
+#include <gsl\gsl>
 
 namespace Library
 {
 	class SamplerStates final
 	{
 	public:
-		static Microsoft::WRL::ComPtr<ID3D11SamplerState> TrilinearWrap;
-		static Microsoft::WRL::ComPtr<ID3D11SamplerState> TrilinearMirror;
-		static Microsoft::WRL::ComPtr<ID3D11SamplerState> TrilinearClamp;
-		static Microsoft::WRL::ComPtr<ID3D11SamplerState> TrilinerBorder;
-		static Microsoft::WRL::ComPtr<ID3D11SamplerState> PointClamp;
-		static Microsoft::WRL::ComPtr<ID3D11SamplerState> DepthMap;
-		static Microsoft::WRL::ComPtr<ID3D11SamplerState> ShadowMap;
-		static Microsoft::WRL::ComPtr<ID3D11SamplerState> PcfShadowMap;
+		inline static winrt::com_ptr<ID3D11SamplerState> TrilinearWrap;
+		inline static winrt::com_ptr<ID3D11SamplerState> TrilinearMirror;
+		inline static winrt::com_ptr<ID3D11SamplerState> TrilinearClamp;
+		inline static winrt::com_ptr<ID3D11SamplerState> TrilinerBorder;
+		inline static winrt::com_ptr<ID3D11SamplerState> PointClamp;
+		inline static winrt::com_ptr<ID3D11SamplerState> DepthMap;
+		inline static winrt::com_ptr<ID3D11SamplerState> ShadowMap;
+		inline static winrt::com_ptr<ID3D11SamplerState> PcfShadowMap;
 
 		static DirectX::XMVECTORF32 BorderColor;
 		static DirectX::XMVECTORF32 ShadowMapBorderColor;
 
-		static void Initialize(ID3D11Device* direct3DDevice);
+		static void Initialize(gsl::not_null<ID3D11Device*> direct3DDevice);
 		static void Shutdown();
 
 		SamplerStates() = delete;

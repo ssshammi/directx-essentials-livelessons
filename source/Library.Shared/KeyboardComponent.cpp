@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "KeyboardComponent.h"
 
 using namespace std;
 using namespace DirectX;
@@ -35,10 +36,8 @@ namespace Library
 		mLastState = mCurrentState;
 	}
 
-	void KeyboardComponent::Update(const GameTime& gameTime)
+	void KeyboardComponent::Update(const GameTime&)
 	{
-		UNREFERENCED_PARAMETER(gameTime);
-
 		mLastState = mCurrentState;
 		mCurrentState = sKeyboard->GetState();
 	}

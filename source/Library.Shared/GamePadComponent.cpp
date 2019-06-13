@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "GamePadComponent.h"
 
 using namespace std;
 using namespace DirectX;
@@ -40,10 +41,8 @@ namespace Library
 		mLastState = mCurrentState;
 	}
 
-	void GamePadComponent::Update(const GameTime& gameTime)
+	void GamePadComponent::Update(const GameTime&)
 	{
-		UNREFERENCED_PARAMETER(gameTime);
-
 		mLastState = mCurrentState;
 		mCurrentState = sGamePad->GetState(mPlayer);
 	}

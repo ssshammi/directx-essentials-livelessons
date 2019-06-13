@@ -34,10 +34,10 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="Content\Models\DirectionalLightProxy.obj.bin">
       <Filter>Content\Models</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Content\Textures\Blocks_COLOR_RGB.png">

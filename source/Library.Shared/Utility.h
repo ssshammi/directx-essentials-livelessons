@@ -2,18 +2,14 @@
 
 #include <string>
 #include <vector>
-
-#define DeleteObject(object) if((object) != nullptr) { delete object; object = nullptr; }
-#define DeleteObjects(objects) if((objects) != nullptr) { delete[] objects; objects = nullptr; }
+#include <limits>
+#include <functional>
 
 namespace Library
 {
-	class Utility
+	class Utility final
 	{
 	public:
-		static void GetFileName(const std::string& inputPath, std::string& filename);
-		static void GetDirectory(const std::string& inputPath, std::string& directory);
-		static void GetFileNameAndDirectory(const std::string& inputPath, std::string& directory, std::string& filename);
 		static void LoadBinaryFile(const std::wstring& filename, std::vector<char>& data);
 		static void ToWideString(const std::string& source, std::wstring& dest);
 		static std::wstring ToWideString(const std::string& source);
@@ -27,4 +23,27 @@ namespace Library
 		Utility& operator=(Utility&&) = delete;
 		~Utility() = default;
 	};
+
+	template <typename T>
+	void UpdateValue(std::function<bool()> increasePredicate, std::function<bool()> decreasePredicate, T& value, const T& delta, std::function<void(const T&)> updateFunc = nullptr, const T& minValue = std::numeric_limits<T>::min(), const T& maxValue = std::numeric_limits<T>::max())
+	{
+		bool update = false;
+		if (increasePredicate() && value < maxValue)
+		{
+			value += delta;
+			value = std::min(value, maxValue);
+			update = true;
+		}
+		else if (decreasePredicate() && value > minValue)
+		{
+			value -= delta;
+			value = std::max(value, minValue);
+			update = true;
+		}
+
+		if (update && updateFunc != nullptr)
+		{
+			updateFunc(value);
+		}
+	}
 }

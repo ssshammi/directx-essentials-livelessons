@@ -3,7 +3,6 @@
 #include "DrawableGameComponent.h"
 #include <DirectXMath.h>
 #include <chrono>
-#include <memory>
 
 namespace DirectX
 {
@@ -19,12 +18,14 @@ namespace Library
 
 	public:
 		FpsComponent(Game& game);
-
-		FpsComponent() = delete;
 		FpsComponent(const FpsComponent&) = delete;
+		FpsComponent(FpsComponent&&) = default;
 		FpsComponent& operator=(const FpsComponent&) = delete;
+		FpsComponent& operator=(FpsComponent&&) = default;
+		~FpsComponent() = default;
 
 		DirectX::XMFLOAT2& TextPosition();
+		int FrameCount() const;	
 		int FrameRate() const;
 
 		virtual void Initialize() override;
@@ -34,10 +35,10 @@ namespace Library
 	private:
 		std::unique_ptr<DirectX::SpriteBatch> mSpriteBatch;
 		std::unique_ptr<DirectX::SpriteFont> mSpriteFont;
-		DirectX::XMFLOAT2 mTextPosition;
+		DirectX::XMFLOAT2 mTextPosition{ 0.0f, 20.0f };
 
-		int mFrameCount;
-		int mFrameRate;
+		int mFrameCount{ 0 };
+		int mFrameRate{ 0 };
 		std::chrono::milliseconds mLastTotalGameTime;
 	};
 }

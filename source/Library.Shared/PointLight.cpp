@@ -1,25 +1,18 @@
-#include "PointLight.h"
 #include "pch.h"
+#include "PointLight.h"
 
 using namespace DirectX;
 
 namespace Library
 {
-	RTTI_DEFINITIONS(PointLight)
+	RTTI_DEFINITIONS(PointLight)	
 
-	const float PointLight::DefaultRadius = 10.0f;
-
-	PointLight::PointLight(Game& game) :
-		PointLight(game, Vector3Helper::Zero, DefaultRadius)
+	PointLight::PointLight(const DirectX::XMFLOAT3& position, float radius) :
+		mPosition(position), mRadius(radius)
 	{
 	}
 
-	PointLight::PointLight(Game& game, const DirectX::XMFLOAT3& position, float radius) :
-		Light(game), mPosition(position), mRadius(radius)
-	{
-	}
-
-	XMFLOAT3& PointLight::Position()
+	const XMFLOAT3& PointLight::Position() const
 	{
 		return mPosition;
 	}

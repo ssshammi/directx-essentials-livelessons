@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "DrawableGameComponent.h"
 
 using namespace std;
 
@@ -6,18 +7,8 @@ namespace Library
 {
 	RTTI_DEFINITIONS(DrawableGameComponent)
 
-	DrawableGameComponent::DrawableGameComponent() :
-		GameComponent(), mVisible(true)
-	{
-	}
-
-	DrawableGameComponent::DrawableGameComponent(Game& game) :
-		GameComponent(game), mVisible(true)
-	{
-	}
-
-	DrawableGameComponent::DrawableGameComponent(Game& game, const shared_ptr<Camera>& camera) :
-		GameComponent(game), mVisible(true), mCamera(camera)
+	DrawableGameComponent::DrawableGameComponent(Game& game, shared_ptr<Camera> camera) :
+		GameComponent(game), mCamera(camera)
 	{
 	}
 
@@ -36,13 +27,12 @@ namespace Library
 		return mCamera;
 	}
 
-	void DrawableGameComponent::SetCamera(const std::shared_ptr<Camera>& camera)
+	void DrawableGameComponent::SetCamera(const shared_ptr<Camera>& camera)
 	{
 		mCamera = camera;
 	}
 
-	void DrawableGameComponent::Draw(const GameTime& gameTime)
+	void DrawableGameComponent::Draw(const GameTime&)
 	{
-		UNREFERENCED_PARAMETER(gameTime);
 	}
 }

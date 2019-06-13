@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameComponent.h"
-#include <GamePad.h>
+#include <DirectXTK\GamePad.h>
 #include <memory>
 
 namespace Library

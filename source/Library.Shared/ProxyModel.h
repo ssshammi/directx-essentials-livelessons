@@ -1,24 +1,31 @@
 #pragma once
 
-#include "DrawableGameComponent.h"
-#include <wrl.h>
-#include <d3d11_2.h>
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <winrt\Windows.Foundation.h>
+#include <d3d11.h>
 #include <DirectXMath.h>
+#include <gsl\gsl>
+#include "DrawableGameComponent.h"
+#include "MatrixHelper.h"
+#include "VectorHelper.h"
+#include "BasicMaterial.h"
 
 namespace Library
 {
 	class Mesh;
 
-	class ProxyModel : public DrawableGameComponent
+	class ProxyModel final : public DrawableGameComponent
 	{
 		RTTI_DECLARATIONS(ProxyModel, DrawableGameComponent)
 
 	public:
 		ProxyModel(Game& game, const std::shared_ptr<Camera>& camera, const std::string& modelFileName, float scale = 1.0f);
 		ProxyModel(const ProxyModel&) = delete;
-		ProxyModel& operator=(const ProxyModel&) = delete;
-		ProxyModel(ProxyModel&&) = delete;
-		ProxyModel& operator=(ProxyModel&&) = delete;
+		ProxyModel(ProxyModel&&) = default;
+		ProxyModel& operator=(const ProxyModel&) = delete;		
+		ProxyModel& operator=(ProxyModel&&) = default;
 		~ProxyModel() = default;
 
 		const DirectX::XMFLOAT3& Position() const;
@@ -33,44 +40,33 @@ namespace Library
 
 		bool& DisplayWireframe();
 
-		void SetPosition(FLOAT x, FLOAT y, FLOAT z);
+		void SetPosition(float x, float y, float z);
 		void SetPosition(DirectX::FXMVECTOR position);
 		void SetPosition(const DirectX::XMFLOAT3& position);
 
 		void ApplyRotation(DirectX::CXMMATRIX transform);
 		void ApplyRotation(const DirectX::XMFLOAT4X4& transform);
 
+		void SetColor(const DirectX::XMFLOAT4& color);
+
 		virtual void Initialize() override;
 		virtual void Update(const GameTime& gameTime) override;		
 		virtual void Draw(const GameTime& gameTime) override;
 
 	private:
-		struct VertexCBufferPerObject
-		{
-			DirectX::XMFLOAT4X4 WorldViewProjection;
-
-			VertexCBufferPerObject() : WorldViewProjection() { }
-
-			VertexCBufferPerObject(const DirectX::XMFLOAT4X4& wvp) : WorldViewProjection(wvp) { }
-		};
-
-		void CreateVertexBuffer(ID3D11Device* device, const Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
-
-		DirectX::XMFLOAT4X4 mWorldMatrix;
-		DirectX::XMFLOAT4X4 mScaleMatrix;
-		DirectX::XMFLOAT3 mPosition;
-		DirectX::XMFLOAT3 mDirection;
-		DirectX::XMFLOAT3 mUp;
-		DirectX::XMFLOAT3 mRight;
+		DirectX::XMFLOAT4X4 mWorldMatrix{ MatrixHelper::Identity };
+		DirectX::XMFLOAT3 mPosition{ Vector3Helper::Zero };
+		DirectX::XMFLOAT3 mDirection{ Vector3Helper::Forward };
+		DirectX::XMFLOAT3 mUp{ Vector3Helper::Up };
+		DirectX::XMFLOAT3 mRight{ Vector3Helper::Right };
+		BasicMaterial mMaterial;
 		std::string mModelFileName;
-		Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
-		Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
-		Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer;		
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexCBufferPerObject;
-		VertexCBufferPerObject mVertexCBufferPerObjectData;
-		UINT mIndexCount;
-		bool mDisplayWireframe;
+		float mScale;
+		winrt::com_ptr<ID3D11Buffer> mVertexBuffer;
+		winrt::com_ptr<ID3D11Buffer> mIndexBuffer;		
+		std::uint32_t mIndexCount{ 0 };
+		bool mDisplayWireframe{ true };
+		bool mUpdateWorldMatrix{ true };
+		bool mUpdateMaterial{ true };
 	};
 }

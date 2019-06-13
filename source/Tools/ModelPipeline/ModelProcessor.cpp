@@ -1,4 +1,10 @@
 #include "pch.h"
+#include "ModelProcessor.h"
+#include "ModelMaterialProcessor.h"
+#include "MeshProcessor.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 using namespace std;
 using namespace Library;
@@ -12,7 +18,7 @@ namespace ModelPipeline
 		ModelData& modelData = model.Data();
 		Assimp::Importer importer;
 
-		UINT flags = aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_FlipWindingOrder;
+		uint32_t flags = aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_FlipWindingOrder;
 		if (flipUVs)
 		{
 			flags |= aiProcess_FlipUVs;
@@ -26,19 +32,19 @@ namespace ModelPipeline
 
 		if (scene->HasMaterials())
 		{
-			for (UINT i = 0; i < scene->mNumMaterials; i++)
+			for (unsigned int i = 0; i < scene->mNumMaterials; i++)
 			{
 				shared_ptr<ModelMaterial> modelMaterial = ModelMaterialProcessor::LoadModelMaterial(model, *(scene->mMaterials[i]));
-				modelData.Materials.push_back(modelMaterial);
+				modelData.Materials.push_back(move(modelMaterial));
 			}
 		}
 
 		if (scene->HasMeshes())
 		{
-			for (UINT i = 0; i < scene->mNumMeshes; i++)
+			for (unsigned int i = 0; i < scene->mNumMeshes; i++)
 			{
 				shared_ptr<Mesh> mesh = MeshProcessor::LoadMesh(model, *(scene->mMeshes[i]));
-				modelData.Meshes.push_back(mesh);
+				modelData.Meshes.push_back(move(mesh));
 			}
 		}
 

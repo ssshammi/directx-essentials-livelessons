@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RTTI.h"
+#include <gsl\gsl>
 
 namespace Library
 {
@@ -12,7 +13,7 @@ namespace Library
 		RTTI_DECLARATIONS(GameComponent, RTTI)
 
 	public:
-		GameComponent();
+		GameComponent() = default;
 		GameComponent(Game& game);
 		GameComponent(const GameComponent&) = default;
 		GameComponent& operator=(const GameComponent&) = default;
@@ -26,10 +27,11 @@ namespace Library
 		void SetEnabled(bool enabled);
 
 		virtual void Initialize();
+		virtual void Shutdown();
 		virtual void Update(const GameTime& gameTime);
 
 	protected:
-		Game* mGame;
-		bool mEnabled;
+		gsl::not_null<Game*> mGame;
+		bool mEnabled{ true };
 	};
 }

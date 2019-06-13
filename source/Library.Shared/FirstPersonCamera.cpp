@@ -1,26 +1,19 @@
 #include "pch.h"
+#include "FirstPersonCamera.h"
+#include "MouseComponent.h"
+#include "KeyboardComponent.h"
+#include "Game.h"
+#include "VectorHelper.h"
 
+using namespace std;
 using namespace DirectX;
 
 namespace Library
 {
     RTTI_DEFINITIONS(FirstPersonCamera)
 
-	const float FirstPersonCamera::DefaultMouseSensitivity = 0.1f;
-    const float FirstPersonCamera::DefaultRotationRate = XMConvertToRadians(100.0f);
-    const float FirstPersonCamera::DefaultMovementRate = 100.0f;
-
-    FirstPersonCamera::FirstPersonCamera(Game& game) :
-		PerspectiveCamera(game),
-		mGamePad(nullptr), mKeyboard(nullptr), mMouse(nullptr), mMouseSensitivity(DefaultMouseSensitivity),
-		mRotationRate(DefaultRotationRate), mMovementRate(DefaultMovementRate)
-    {
-    }
-
     FirstPersonCamera::FirstPersonCamera(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance) :
-		PerspectiveCamera(game, fieldOfView, aspectRatio, nearPlaneDistance, farPlaneDistance),
-		mGamePad(nullptr), mKeyboard(nullptr), mMouse(nullptr), mMouseSensitivity(DefaultMouseSensitivity),
-		mRotationRate(DefaultRotationRate), mMovementRate(DefaultMovementRate)
+		PerspectiveCamera(game, fieldOfView, aspectRatio, nearPlaneDistance, farPlaneDistance)
     {
     }
 
@@ -69,9 +62,37 @@ namespace Library
         return mMovementRate;
     }
 
+	const vector<function<void()>>& FirstPersonCamera::PositionUpdatedCallbacks() const
+	{
+		return mPositionUpdatedCallbacks;
+	}
+
+	void FirstPersonCamera::AddPositionUpdatedCallback(function<void()> callback)
+	{
+		mPositionUpdatedCallbacks.push_back(callback);
+	}
+
+	void FirstPersonCamera::SetPosition(float x, float y, float z)
+	{
+		Camera::SetPosition(x, y, z);
+		InvokePositionUpdatedCallbacks();
+	}
+
+	void FirstPersonCamera::SetPosition(FXMVECTOR position)
+	{
+		Camera::SetPosition(position);
+		InvokePositionUpdatedCallbacks();
+	}
+
+	void FirstPersonCamera::SetPosition(const XMFLOAT3& position)
+	{
+		Camera::SetPosition(position);
+		InvokePositionUpdatedCallbacks();
+	}
+
 	void FirstPersonCamera::Initialize()
 	{
-		mGamePad = (GamePadComponent*)mGame->Services().GetService(GamePadComponent::TypeIdClass());
+		mGamePad = reinterpret_cast<GamePadComponent*>(mGame->Services().GetService(GamePadComponent::TypeIdClass()));
 		mKeyboard = (KeyboardComponent*)mGame->Services().GetService(KeyboardComponent::TypeIdClass());
 		mMouse = (MouseComponent*)mGame->Services().GetService(MouseComponent::TypeIdClass());
 
@@ -85,7 +106,11 @@ namespace Library
 		{
 			XMFLOAT2 movementAmount(gamePadState.thumbSticks.leftX, gamePadState.thumbSticks.leftY);
 			XMFLOAT2 rotationAmount(-gamePadState.thumbSticks.rightX, gamePadState.thumbSticks.rightY);
-			UpdatePosition(movementAmount, rotationAmount, gameTime);			
+
+			if (movementAmount.x != 0 || movementAmount.y != 0 || rotationAmount.x != 0 || rotationAmount.y != 0)
+			{
+				UpdatePosition(movementAmount, rotationAmount, gameTime);
+			}
 		}
 		else
 		{
@@ -116,7 +141,7 @@ namespace Library
 			}
 
 			XMFLOAT2 rotationAmount = Vector2Helper::Zero;
-			if (mMouse != nullptr)
+			if (mMouse != nullptr && mMouse->Mode() == MouseModes::Relative)
 			{				
 				if (mMouse->IsButtonHeldDown(MouseButtons::Left))
 				{
@@ -156,5 +181,16 @@ namespace Library
 		position += forward;
 
 		XMStoreFloat3(&mPosition, position);
+
+		InvokePositionUpdatedCallbacks();
+		mViewMatrixDataDirty = true;
+	}
+
+	inline void FirstPersonCamera::InvokePositionUpdatedCallbacks()
+	{
+		for (auto& callback : mPositionUpdatedCallbacks)
+		{
+			callback();
+		}
 	}
 }

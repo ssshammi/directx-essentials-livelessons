@@ -1,82 +1,82 @@
 #include "pch.h"
+#include "RenderStateHelper.h"
+#include "Game.h"
 
 namespace Library
 {
 	RenderStateHelper::RenderStateHelper(Game& game) :
-		mGame(game), mBlendFactor(new FLOAT[4]), mSampleMask(UINT_MAX), mStencilRef(UINT_MAX)
+		mGame(game)
 	{
 	}
 
-	RenderStateHelper::~RenderStateHelper()
-	{
-		DeleteObjects(mBlendFactor);
-	}
-
-	void RenderStateHelper::ResetAll(ID3D11DeviceContext* deviceContext)
+	void RenderStateHelper::ResetAll(gsl::not_null<ID3D11DeviceContext*> deviceContext)
 	{
 		ResetRasterizerState(deviceContext);
 		ResetBlendState(deviceContext);
 		ResetDepthStencilState(deviceContext);
 	}
 
-	void RenderStateHelper::ResetRasterizerState(ID3D11DeviceContext* deviceContext)
+	void RenderStateHelper::ResetRasterizerState(gsl::not_null<ID3D11DeviceContext*> deviceContext)
 	{
 		deviceContext->RSSetState(nullptr);
 	}
 
-	void RenderStateHelper::ResetBlendState(ID3D11DeviceContext* deviceContext)
+	void RenderStateHelper::ResetBlendState(gsl::not_null<ID3D11DeviceContext*> deviceContext)
 	{
 		deviceContext->OMSetBlendState(nullptr, nullptr, UINT_MAX);
 	}
 
-	void RenderStateHelper::ResetDepthStencilState(ID3D11DeviceContext* deviceContext)
+	void RenderStateHelper::ResetDepthStencilState(gsl::not_null<ID3D11DeviceContext*> deviceContext)
 	{
 		deviceContext->OMSetDepthStencilState(nullptr, UINT_MAX);
 	}
 
 	ID3D11RasterizerState* RenderStateHelper::RasterizerState()
 	{
-		return mRasterizerState.Get();
+		return mRasterizerState.get();
 	}
 
 	ID3D11BlendState* RenderStateHelper::BlendState()
 	{
-		return mBlendState.Get();
+		return mBlendState.get();
 	}
 
 	ID3D11DepthStencilState* RenderStateHelper::DepthStencilState()
 	{
-		return mDepthStencilState.Get();
+		return mDepthStencilState.get();
 	}
 
 	void RenderStateHelper::SaveRasterizerState()
 	{
-		mGame.Direct3DDeviceContext()->RSGetState(mRasterizerState.ReleaseAndGetAddressOf());
+		mRasterizerState = nullptr;
+		mGame.Direct3DDeviceContext()->RSGetState(mRasterizerState.put());
 	}
 
 	void RenderStateHelper::RestoreRasterizerState() const
 	{
-		mGame.Direct3DDeviceContext()->RSSetState(mRasterizerState.Get());
+		mGame.Direct3DDeviceContext()->RSSetState(mRasterizerState.get());
 	}
 
 	void RenderStateHelper::SaveBlendState()
 	{
-		mGame.Direct3DDeviceContext()->OMGetBlendState(mBlendState.ReleaseAndGetAddressOf(), mBlendFactor, &mSampleMask);
+		mBlendState = nullptr;
+		mGame.Direct3DDeviceContext()->OMGetBlendState(mBlendState.put(), mBlendFactor.data(), &mSampleMask);
 	}
 
 	void RenderStateHelper::RestoreBlendState() const
 	{
-		mGame.Direct3DDeviceContext()->OMSetBlendState(mBlendState.Get(), mBlendFactor, mSampleMask);
+		mGame.Direct3DDeviceContext()->OMSetBlendState(mBlendState.get(), mBlendFactor.data(), mSampleMask);
 	}
 
 	void RenderStateHelper::SaveDepthStencilState()
 	{
-		mGame.Direct3DDeviceContext()->OMGetDepthStencilState(mDepthStencilState.ReleaseAndGetAddressOf(), &mStencilRef);
+		mDepthStencilState = nullptr;
+		mGame.Direct3DDeviceContext()->OMGetDepthStencilState(mDepthStencilState.put(), &mStencilRef);
 	}
 
 	void RenderStateHelper::RestoreDepthStencilState() const
 	{
-		mGame.Direct3DDeviceContext()->OMSetDepthStencilState(mDepthStencilState.Get(), mStencilRef);
+		mGame.Direct3DDeviceContext()->OMSetDepthStencilState(mDepthStencilState.get(), mStencilRef);
 	}
 
 	void RenderStateHelper::SaveAll()
@@ -91,5 +91,12 @@ namespace Library
 		RestoreRasterizerState();
 		RestoreBlendState();
 		RestoreDepthStencilState();
+	}
+
+	void RenderStateHelper::ClearAll()
+	{
+		mRasterizerState = nullptr;
+		mBlendState = nullptr;
+		mDepthStencilState = nullptr;
 	}
 }

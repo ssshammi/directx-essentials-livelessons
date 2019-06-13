@@ -9,3 +9,6 @@ source/*/bin/
 source/*/obj/
 source/Tools/ModelPipeline/bin/
 source/Tools/ModelPipeline/obj/
+build/.vs/
+build/bin/
+build/obj/

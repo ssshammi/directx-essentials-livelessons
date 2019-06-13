@@ -26,15 +26,10 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="Content\Models\Sphere.obj.bin">
       <Filter>Content\Models</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Content\Textures\EarthComposite.dds">
-      <Filter>Content\Textures</Filter>
-    </Image>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\Shaders\TexturedModelDemoPS.hlsl">
@@ -43,5 +38,10 @@
     <FxCompile Include="Content\Shaders\TexturedModelDemoVS.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Content\Textures\EarthComposite.dds">
+      <Filter>Content\Textures</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

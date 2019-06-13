@@ -11,10 +11,10 @@ namespace Library
 	{
 	public:
 		GameClock();
-		GameClock(const GameClock&) = delete;
-		GameClock& operator=(const GameClock&) = delete;
-		GameClock(GameClock&&) = delete;
-		GameClock& operator=(GameClock&&) = delete;
+		GameClock(const GameClock&) = default;
+		GameClock& operator=(const GameClock&) = default;
+		GameClock(GameClock&&) = default;
+		GameClock& operator=(GameClock&&) = default;
 		~GameClock() = default;
 
 		const std::chrono::high_resolution_clock::time_point& StartTime() const;

@@ -1,4 +1,6 @@
 #include "pch.h"
+#include "MouseComponent.h"
+#include "Game.h"
 
 using namespace std;
 using namespace DirectX;
@@ -38,10 +40,8 @@ namespace Library
 		mLastState = mCurrentState;
 	}
 
-	void MouseComponent::Update(const GameTime& gameTime)
+	void MouseComponent::Update(const GameTime&)
 	{
-		UNREFERENCED_PARAMETER(gameTime);
-
 		mLastState = mCurrentState;
 		mCurrentState = sMouse->GetState();
 	}
@@ -99,6 +99,12 @@ namespace Library
 	bool MouseComponent::IsButtonHeldDown(MouseButtons button) const
 	{
 		return (IsButtonDown(button) && WasButtonDown(button));
+	}
+
+	MouseModes MouseComponent::Mode() const
+	{
+		auto state = sMouse->GetState();
+		return static_cast<MouseModes>(state.positionMode);
 	}
 
 	void MouseComponent::SetMode(MouseModes mode)

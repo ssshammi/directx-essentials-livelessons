@@ -26,13 +26,13 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="Content\Models\DirectionalLightProxy.obj.bin">
       <Filter>Content\Models</Filter>
     </None>
     <None Include="Content\Models\Sphere.obj.bin">
       <Filter>Content\Models</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\Shaders\DiffuseLightingPS.hlsl">

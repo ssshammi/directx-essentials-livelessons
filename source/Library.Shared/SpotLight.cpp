@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "SpotLight.h"
 
 using namespace DirectX;
 
@@ -6,12 +7,8 @@ namespace Library
 {
 	RTTI_DEFINITIONS(SpotLight)
 
-	const float SpotLight::DefaultInnerAngle = 0.75f;
-	const float SpotLight::DefaultOuterAngle = 0.25f;
-
-	SpotLight::SpotLight(Game& game, const XMFLOAT3& position, float radius) :
-		PointLight(game, position, radius), mInnerAngle(DefaultInnerAngle), mOuterAngle(DefaultOuterAngle),
-		mDirection(Vector3Helper::Forward), mUp(Vector3Helper::Up), mRight(Vector3Helper::Right)
+	SpotLight::SpotLight(const XMFLOAT3& position, float radius) :
+		PointLight(position, radius)
 	{
 	}
 

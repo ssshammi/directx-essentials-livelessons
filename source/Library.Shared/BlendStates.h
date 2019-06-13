@@ -1,17 +1,21 @@
 #pragma once
 
-#include <wrl.h>
-#include <d3d11_2.h>
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <winrt\Windows.Foundation.h>
+#include <d3d11.h>
+#include <gsl\gsl>
 
 namespace Library
 {
 	class BlendStates final
 	{
 	public:
-		static Microsoft::WRL::ComPtr<ID3D11BlendState> AlphaBlending;
-		static Microsoft::WRL::ComPtr<ID3D11BlendState> MultiplicativeBlending;
+		inline static winrt::com_ptr<ID3D11BlendState> AlphaBlending;
+		inline static winrt::com_ptr<ID3D11BlendState> MultiplicativeBlending;
 
-		static void Initialize(ID3D11Device* direct3DDevice);
+		static void Initialize(gsl::not_null<ID3D11Device*> direct3DDevice);
 		static void Shutdown();
 
 		BlendStates() = delete;

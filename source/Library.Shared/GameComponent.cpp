@@ -1,16 +1,12 @@
 #include "pch.h"
+#include "GameComponent.h"
 
 namespace Library
 {
 	RTTI_DEFINITIONS(GameComponent)
 
-	GameComponent::GameComponent() :
-		mGame(nullptr), mEnabled(true)
-	{
-	}
-
 	GameComponent::GameComponent(Game& game) :
-		mGame(&game), mEnabled(true)
+		mGame(&game)
 	{
 	}
 
@@ -21,7 +17,7 @@ namespace Library
 
 	void GameComponent::SetGame(Game& game)
 	{
-		mGame = &game;
+		mGame = gsl::not_null<Game*>(&game);
 	}
 
 	bool GameComponent::Enabled() const
@@ -38,8 +34,11 @@ namespace Library
 	{
 	}
 
-	void GameComponent::Update(const GameTime& gameTime)
+	void GameComponent::Shutdown()
 	{
-		UNREFERENCED_PARAMETER(gameTime);
+	}
+
+	void GameComponent::Update(const GameTime&)
+	{		
 	}
 }

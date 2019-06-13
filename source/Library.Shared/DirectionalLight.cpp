@@ -1,15 +1,11 @@
 #include "pch.h"
+#include "DirectionalLight.h"
 
 using namespace DirectX;
 
 namespace Library
 {
 	RTTI_DEFINITIONS(DirectionalLight)
-
-	DirectionalLight::DirectionalLight(Game& game) :
-		Light(game), mDirection(Vector3Helper::Forward), mUp(Vector3Helper::Up), mRight(Vector3Helper::Right)
-	{
-	}
 
 	const XMFLOAT3& DirectionalLight::Direction() const
 	{

@@ -12,7 +12,7 @@ namespace Library
 
 namespace ModelPipeline
 {
-    class MeshProcessor
+    class MeshProcessor final
     {
     public:
 		MeshProcessor() = delete;

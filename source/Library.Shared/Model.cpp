@@ -1,29 +1,17 @@
 #include "pch.h"
+#include "Model.h"
+#include "Mesh.h"
+#include "StreamHelper.h"
+#include "GameException.h"
+#include "ModelMaterial.h"
 
 using namespace std;
+using namespace gsl;
 using namespace DirectX;
 
 namespace Library
 {
-#pragma region ModelData
-
-	ModelData::ModelData(ModelData&& rhs) :
-		Meshes(move(rhs.Meshes)), Materials(move(rhs.Materials))
-	{
-	}
-
-	ModelData& ModelData::operator=(ModelData&& rhs)
-	{
-		if (this != &rhs)
-		{
-			Meshes = move(rhs.Meshes);
-			Materials = move(rhs.Materials);
-		}
-
-		return *this;
-	}
-
-#pragma endregion
+	RTTI_DEFINITIONS(Model)
 
 	Model::Model(const string& filename)
 	{
@@ -38,21 +26,6 @@ namespace Library
 	Model::Model(ModelData&& modelData) :
 		mData(move(modelData))
 	{
-	}
-
-	Model::Model(Model&& rhs) :
-		mData(move(rhs.mData))
-	{
-	}
-
-	Model& Model::operator=(Model&& rhs)
-	{
-		if (this != &rhs)
-		{
-			mData = move(rhs.mData);
-		}
-
-		return *this;
 	}
 
 	bool Model::HasMeshes() const
@@ -96,14 +69,14 @@ namespace Library
 		OutputStreamHelper streamHelper(file);
 
 		// Serialize materials
-		streamHelper << static_cast<uint32_t>(mData.Materials.size());
+		streamHelper << narrow_cast<uint32_t>(mData.Materials.size());
 		for (const auto& material : mData.Materials)
 		{
 			material->Save(streamHelper);
 		}
 
 		// Serialize meshes
-		streamHelper << static_cast<uint32_t>(mData.Meshes.size());
+		streamHelper << narrow_cast<uint32_t>(mData.Meshes.size());
 		for (auto& mesh : mData.Meshes)
 		{
 			mesh->Save(streamHelper);
@@ -131,7 +104,7 @@ namespace Library
 		mData.Materials.reserve(materialCount);
 		for (uint32_t i = 0; i < materialCount; i++)
 		{
-			mData.Materials.push_back(make_shared<ModelMaterial>(*this, streamHelper));
+			mData.Materials.emplace_back(make_shared<ModelMaterial>(*this, streamHelper));
 		}
 
 		// Desrialize meshes
@@ -140,7 +113,7 @@ namespace Library
 		mData.Meshes.reserve(meshCount);
 		for (uint32_t i = 0; i < meshCount; i++)
 		{
-			mData.Meshes.push_back(make_shared<Mesh>(*this, streamHelper));
+			mData.Meshes.emplace_back(make_shared<Mesh>(*this, streamHelper));
 		}
 	}
 }

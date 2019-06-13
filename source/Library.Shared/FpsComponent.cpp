@@ -1,6 +1,9 @@
 #include "pch.h"
+#include "FpsComponent.h"
+#include "Game.h"
 
 using namespace std;
+using namespace std::literals;
 using namespace DirectX;
 
 namespace Library
@@ -8,8 +11,7 @@ namespace Library
 	RTTI_DEFINITIONS(FpsComponent)
 
 	FpsComponent::FpsComponent(Game& game) :
-		DrawableGameComponent(game),
-		mTextPosition(0.0f, 20.0f), mFrameCount(0), mFrameRate(0)
+		DrawableGameComponent(game)		
 	{
 	}
 
@@ -18,9 +20,14 @@ namespace Library
 		return mTextPosition;
 	}
 
-	int FpsComponent::FrameRate() const
+	int FpsComponent::FrameCount() const
 	{
 		return mFrameCount;
+	}
+
+	int FpsComponent::FrameRate() const
+	{
+		return mFrameRate;
 	}
 
 	void FpsComponent::Initialize()
@@ -31,7 +38,7 @@ namespace Library
 
 	void FpsComponent::Update(const GameTime& gameTime)
 	{
-		if ((gameTime.TotalGameTime() - mLastTotalGameTime).count() >= 1000)
+		if ((gameTime.TotalGameTime() - mLastTotalGameTime) >= 1s)
 		{
 			mLastTotalGameTime = gameTime.TotalGameTime();
 			mFrameRate = mFrameCount;
@@ -46,7 +53,7 @@ namespace Library
 		mSpriteBatch->Begin();
 
 		wostringstream fpsLabel;
-		fpsLabel << setprecision(4) << L"Frame Rate: " << mFrameRate << "    Total Elapsed Time: " << gameTime.TotalGameTimeSeconds().count();
+		fpsLabel << setprecision(4) << L"Frame Rate: " << mFrameRate << L"    Total Elapsed Time: " << gameTime.TotalGameTimeSeconds().count();
 		mSpriteFont->DrawString(mSpriteBatch.get(), fpsLabel.str().c_str(), mTextPosition);
 
 		mSpriteBatch->End();

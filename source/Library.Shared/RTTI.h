@@ -1,6 +1,5 @@
 #pragma once
 
-#include <windows.h>
 #include <string>
 #include <cstdint>
 
@@ -9,37 +8,31 @@ namespace Library
 	class RTTI
 	{
 	public:
+		using IdType = std::uint64_t;
+
 		virtual ~RTTI() = default;
 
 		virtual std::uint64_t TypeIdInstance() const = 0;
 
-		virtual RTTI* QueryInterface(const std::uint64_t id) const
+		virtual RTTI* QueryInterface(const IdType)
 		{
-			UNREFERENCED_PARAMETER(id);
 			return nullptr;
 		}
 
-		virtual bool Is(std::uint64_t id) const
+		virtual bool Is(IdType) const
 		{
-			UNREFERENCED_PARAMETER(id);
 			return false;
 		}
 
-		virtual bool Is(const std::string& name) const
+		virtual bool Is(const std::string&) const
 		{
-			UNREFERENCED_PARAMETER(name);
 			return false;
 		}
 
 		template <typename T>
 		T* As() const
 		{
-			if (Is(T::TypeIdClass()))
-			{
-				return (T*)this;
-			}
-
-			return nullptr;
+			return (Is(T::TypeIdClass()) ? reinterpret_cast<T*>(const_cast<RTTI*>(this)) : nullptr);
 		}
 
 		virtual std::string ToString() const
@@ -53,35 +46,25 @@ namespace Library
 		}
 	};
 
-#define RTTI_DECLARATIONS(Type, ParentType)																	 \
-		public:                                                                                              \
-			typedef ParentType Parent;                                                                       \
-			static std::string TypeName() { return std::string(#Type); }                                     \
-			static std::uint64_t TypeIdClass() { return sRunTimeTypeId; }                                    \
-			virtual std::uint64_t TypeIdInstance() const override { return Type::TypeIdClass(); }            \
-			virtual Library::RTTI* QueryInterface(const std::uint64_t id) const override                     \
-            {                                                                                                \
-                if (id == sRunTimeTypeId)                                                                    \
-					{ return (RTTI*)this; }                                                                  \
-                else                                                                                         \
-					{ return Parent::QueryInterface(id); }                                                   \
-            }                                                                                                \
-			virtual bool Is(std::uint64_t id) const override                                                 \
-			{                                                                                                \
-				if (id == sRunTimeTypeId)                                                                    \
-					{ return true; }                                                                         \
-				else                                                                                         \
-					{ return Parent::Is(id); }                                                               \
-			}                                                                                                \
-			virtual bool Is(const std::string& name) const override                                          \
-			{                                                                                                \
-				if (name == TypeName())                                                                      \
-					{ return true; }                                                                         \
-				else                                                                                         \
-					{ return Parent::Is(name); }                                                             \
-			}                                                                                                \
-			private:                                                                                         \
-				static std::uint64_t sRunTimeTypeId;
+#define RTTI_DECLARATIONS(Type, ParentType)																				 \
+		public:																											 \
+			static std::string TypeName() { return std::string(#Type); }												 \
+			static IdType TypeIdClass() { return sRunTimeTypeId; }												 \
+			virtual IdType TypeIdInstance() const override { return Type::TypeIdClass(); }						 \
+			virtual Library::RTTI* QueryInterface(const IdType id) override										 \
+            {																											 \
+				return (id == sRunTimeTypeId ? reinterpret_cast<Library::RTTI*>(this) : ParentType::QueryInterface(id)); \
+            }																											 \
+			virtual bool Is(IdType id) const override															 \
+			{																											 \
+				return (id == sRunTimeTypeId ? true : ParentType::Is(id));												 \
+			}																											 \
+			virtual bool Is(const std::string& name) const override														 \
+			{																											 \
+				return (name == TypeName() ? true : ParentType::Is(name));												 \
+			}																											 \
+			private:																									 \
+				static IdType sRunTimeTypeId;
 
-#define RTTI_DEFINITIONS(Type) std::uint64_t Type::sRunTimeTypeId = reinterpret_cast<std::uint64_t>(&Type::sRunTimeTypeId);
+#define RTTI_DEFINITIONS(Type) RTTI::IdType Type::sRunTimeTypeId = reinterpret_cast<RTTI::IdType>(&Type::sRunTimeTypeId);
 }

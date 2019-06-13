@@ -1,13 +1,15 @@
 #include "pch.h"
+#include "ColorHelper.h"
 
+using namespace std;
 using namespace DirectX;
 using namespace DirectX::PackedVector;
 
 namespace Library
 {
-	std::random_device ColorHelper::sDevice;
-	std::default_random_engine ColorHelper::sGenerator(sDevice());
-	std::uniform_real_distribution<float> ColorHelper::sDistribution(0, 1);
+	random_device ColorHelper::sDevice;
+	default_random_engine ColorHelper::sGenerator(sDevice());
+	uniform_real_distribution<float> ColorHelper::sDistribution(0, 1);
 
 	XMFLOAT4 ColorHelper::RandomColor()
 	{

@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "StreamHelper.h"
 
 using namespace std;
 using namespace DirectX;
@@ -75,7 +76,7 @@ OutputStreamHelper& OutputStreamHelper::operator<<(const XMFLOAT4X4& value)
 
 OutputStreamHelper& OutputStreamHelper::operator<<(bool value)
 {
-	WriteObject(mStream, static_cast<byte>(value ? 1 : 0));
+	WriteObject(mStream, static_cast<uint8_t>(value ? 1 : 0));
 
 	return *this;
 }
@@ -164,7 +165,7 @@ InputStreamHelper& InputStreamHelper::operator>>(XMFLOAT4X4& value)
 
 InputStreamHelper& InputStreamHelper::operator>>(bool& value)
 {
-	byte boolValue;
+	uint8_t boolValue;
 	ReadObject(mStream, boolValue);
 
 	value = (boolValue == 1 ? true : false);

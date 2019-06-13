@@ -15,7 +15,9 @@ namespace Library
 
 		ColorHelper() = delete;
 		ColorHelper(const ColorHelper&) = delete;
+		ColorHelper(ColorHelper&&) = default;
 		ColorHelper& operator=(const ColorHelper&) = delete;
+		ColorHelper& operator=(ColorHelper&&) = default;
 
 	private:
 		static std::random_device sDevice;

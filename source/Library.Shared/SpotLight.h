@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PointLight.h"
+#include "VectorHelper.h"
 
 namespace Library
 {
@@ -9,7 +10,7 @@ namespace Library
 		RTTI_DECLARATIONS(SpotLight, PointLight)
 
 	public:
-		SpotLight(Game& game, const DirectX::XMFLOAT3& position = Vector3Helper::Zero, float radius = DefaultRadius);
+		explicit SpotLight(const DirectX::XMFLOAT3& position = Vector3Helper::Zero, float radius = DefaultRadius);
 		virtual ~SpotLight() = default;
 	
 		const DirectX::XMFLOAT3& Direction() const;
@@ -31,14 +32,14 @@ namespace Library
 		void ApplyRotation(DirectX::CXMMATRIX transform);
 		void ApplyRotation(const DirectX::XMFLOAT4X4& transform);
 
-		static const float DefaultInnerAngle;
-		static const float DefaultOuterAngle;
+		inline static const float DefaultInnerAngle{ 0.75f };
+		inline static const float DefaultOuterAngle{ 0.25f };
 
 	protected:
-		DirectX::XMFLOAT3 mDirection;
-		DirectX::XMFLOAT3 mUp;
-		DirectX::XMFLOAT3 mRight;
-		float mInnerAngle;
-		float mOuterAngle;
+		DirectX::XMFLOAT3 mDirection{ Vector3Helper::Forward };
+		DirectX::XMFLOAT3 mUp{ Vector3Helper::Up };
+		DirectX::XMFLOAT3 mRight{ Vector3Helper::Right };
+		float mInnerAngle{ DefaultInnerAngle };
+		float mOuterAngle{ DefaultOuterAngle };
 	};
 }

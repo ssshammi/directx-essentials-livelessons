@@ -8,13 +8,9 @@ namespace Library
 	class ServiceContainer final
 	{
 	public:
-		ServiceContainer() = default;
-		ServiceContainer(const ServiceContainer&) = delete;
-		ServiceContainer& operator=(const ServiceContainer&) = delete;
-
-		void AddService(std::uint64_t typeID, void* service);
-		void RemoveService(std::uint64_t typeID);
-		void* GetService(std::uint64_t typeID) const;
+		void AddService(std::uint64_t typeId, void* service);
+		void RemoveService(std::uint64_t typeId);
+		void* GetService(std::uint64_t typeId) const;
 
 		std::map<std::uint64_t, void*> mServices;
 	};

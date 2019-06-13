@@ -7,8 +7,21 @@ namespace Library
 	class MatrixHelper final
 	{
 	public:
-		static const DirectX::XMFLOAT4X4 Identity;
-		static const DirectX::XMFLOAT4X4 Zero;
+		inline static const DirectX::XMFLOAT4X4 Identity
+		{
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f
+		};
+
+		inline static const DirectX::XMFLOAT4X4 Zero
+		{
+			0.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.0f
+		};
 
 		static void GetForward(DirectX::CXMMATRIX matrix, DirectX::XMFLOAT3 &vector);
 		static void GetUp(DirectX::CXMMATRIX matrix, DirectX::XMFLOAT3 &vector);

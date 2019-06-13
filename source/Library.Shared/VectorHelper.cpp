@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "VectorHelper.h"
 
 using namespace std;
 using namespace DirectX;
@@ -33,6 +34,11 @@ namespace Library
 		stream << "{" << vector.x << ", " << vector.y << ", " << vector.z << "}";
 
 		return stream.str();
+	}
+
+	XMFLOAT3 Vector3Helper::ToFloat3(const XMFLOAT4& vector)
+	{
+		return XMFLOAT3(vector.x, vector.y, vector.z);
 	}
 
 	const XMFLOAT4 Vector4Helper::Zero = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);

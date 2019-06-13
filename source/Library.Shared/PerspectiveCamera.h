@@ -11,8 +11,7 @@ namespace Library
 		RTTI_DECLARATIONS(PerspectiveCamera, Camera)
 
     public:
-		explicit PerspectiveCamera(Game& game);
-		PerspectiveCamera(Game& game, float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance);
+		explicit PerspectiveCamera(Game& game, float fieldOfView = DefaultFieldOfView, float aspectRatio = DefaultAspectRatio, float nearPlaneDistance = DefaultNearPlaneDistance, float farPlaneDistance = DefaultFarPlaneDistance);
 		PerspectiveCamera(const PerspectiveCamera&) = default;
 		PerspectiveCamera& operator=(const PerspectiveCamera&) = default;
 		PerspectiveCamera(PerspectiveCamera&&) = default;
@@ -20,16 +19,18 @@ namespace Library
 		virtual ~PerspectiveCamera() = default;
        
         float AspectRatio() const;
+		void SetAspectRatio(float aspectRatio);
+
         float FieldOfView() const;
+		void SetFieldOfView(float fieldOfView);
 
 		virtual void UpdateProjectionMatrix() override;
         
-        static const float DefaultFieldOfView;
-		static const float DefaultAspectRatio;
+		inline static const float DefaultFieldOfView{ DirectX::XM_PIDIV4 };
+		inline static const float DefaultAspectRatio{ 4.0f / 3.0f };
 
     protected:
         float mFieldOfView;
         float mAspectRatio;
     };
 }
-

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <cstdint>
+#include "ModelMaterial.h"
 
 struct aiMaterial;
 
@@ -12,7 +14,7 @@ namespace Library
 
 namespace ModelPipeline
 {
-    class ModelMaterialProcessor
+    class ModelMaterialProcessor final
     {
     public:
 		ModelMaterialProcessor() = delete;
@@ -20,7 +22,6 @@ namespace ModelPipeline
 		static std::shared_ptr<Library::ModelMaterial> LoadModelMaterial(Library::Model& model, aiMaterial& material);
 
 	private:
-        static void InitializeTextureTypeMappings();
-        static std::map<Library::TextureType, UINT> sTextureTypeMappings;
+        static const std::map<Library::TextureType, std::uint32_t> sTextureTypeMappings;
     };
 }

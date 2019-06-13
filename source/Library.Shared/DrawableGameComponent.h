@@ -12,9 +12,8 @@ namespace Library
         RTTI_DECLARATIONS(DrawableGameComponent, GameComponent)
 
     public:
-        DrawableGameComponent();
-        DrawableGameComponent(Game& game);
-		DrawableGameComponent(Game& game, const std::shared_ptr<Camera>& camera);
+        DrawableGameComponent() = default;
+		explicit DrawableGameComponent(Game& game, std::shared_ptr<Camera> camera = nullptr);
 		DrawableGameComponent(const DrawableGameComponent&) = default;
 		DrawableGameComponent& operator=(const DrawableGameComponent&) = default;
 		DrawableGameComponent(DrawableGameComponent&&) = default;
@@ -30,7 +29,7 @@ namespace Library
         virtual void Draw(const GameTime& gameTime);
 
     protected:
-        bool mVisible;
+		bool mVisible{ true };
 		std::shared_ptr<Camera> mCamera;
     };
 }

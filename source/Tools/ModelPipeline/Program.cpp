@@ -1,6 +1,9 @@
 #include "pch.h"
+#include "ModelProcessor.h"
 
 using namespace std;
+using namespace std::filesystem;
+using namespace std::string_literals;
 using namespace ModelPipeline;
 using namespace Library;
 
@@ -14,27 +17,28 @@ int main(int argc, char* argv[])
 	{
 		if (argc < 2)
 		{
-			throw exception("Usage: ...TODO");
+			throw exception("Usage: ModelPipeline.exe inputfilename");
 		}
 
-		string inputFile = argv[1];
-		string inputFilename;
-		string inputDirectory;			
-		Library::Utility::GetFileNameAndDirectory(inputFile, inputDirectory, inputFilename);
-		if (inputDirectory.empty())
+		path inputFile(argv[1]);
+		current_path(inputFile.parent_path().c_str());
+
+		cout << "Reading: "s << inputFile.filename() << endl;
+		Model model = ModelProcessor::LoadModel(inputFile.filename().string(), true);
+
+		string outputFilename = inputFile.stem().string() + ".model"s;
+		if (!model.HasMeshes())
 		{
-			inputDirectory = UtilityWin32::CurrentDirectory();
+			throw exception("Model has no meshes.");
 		}
-
-		SetCurrentDirectory(Library::Utility::ToWideString(inputDirectory).c_str());		
-		Model model = ModelProcessor::LoadModel(inputFilename, true);
 		
-		string outputFilename = inputFilename + ".bin";		
+		cout << "Writing: "s << outputFilename << endl;
 		model.Save(outputFilename);
+		cout << "Finished."s << endl;
 	}
 	catch (exception ex)
 	{
-		cout << ex.what();
+		cout << ex.what() << endl;
 	}
 
 	return 0;

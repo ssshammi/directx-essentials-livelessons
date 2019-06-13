@@ -1,14 +1,10 @@
 #include "pch.h"
+#include "GameTime.h"
 
 using namespace std::chrono;
 
 namespace Library
 {
-	GameTime::GameTime() :
-		mTotalGameTime(0), mElapsedGameTime(0)
-	{
-	}
-
 	const high_resolution_clock::time_point& GameTime::CurrentTime() const
 	{
 		return mCurrentTime;
@@ -24,7 +20,7 @@ namespace Library
 		return mTotalGameTime;
 	}
 
-	void GameTime::SetTotalGameTime(const std::chrono::milliseconds& totalGameTime)
+	void GameTime::SetTotalGameTime(const milliseconds& totalGameTime)
 	{
 		mTotalGameTime = totalGameTime;
 	}
@@ -34,7 +30,7 @@ namespace Library
 		return mElapsedGameTime;
 	}
 
-	void GameTime::SetElapsedGameTime(const std::chrono::milliseconds& elapsedGameTime)
+	void GameTime::SetElapsedGameTime(const milliseconds& elapsedGameTime)
 	{
 		mElapsedGameTime = elapsedGameTime;
 	}

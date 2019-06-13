@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameComponent.h"
-#include <Mouse.h>
+#include <DirectXTK\Mouse.h>
 #include <memory>
 #include <windows.h>
 
@@ -34,7 +34,12 @@ namespace Library
 	public:
 		static DirectX::Mouse* Mouse();
 		
-		MouseComponent(Game& game, MouseModes mode = MouseModes::Relative);
+		explicit MouseComponent(Game& game, MouseModes mode = MouseModes::Relative);
+		MouseComponent(const MouseComponent&) = delete;
+		MouseComponent(MouseComponent&&) = default;
+		MouseComponent& operator=(const MouseComponent&) = delete;
+		MouseComponent& operator=(MouseComponent&&) = default;
+		~MouseComponent() = default;
 
 		const DirectX::Mouse::State& CurrentState() const;
 		const DirectX::Mouse::State& LastState() const;
@@ -55,6 +60,7 @@ namespace Library
 		bool WasButtonReleasedThisFrame(MouseButtons button) const;
 		bool IsButtonHeldDown(MouseButtons Button) const;
 
+		MouseModes Mode() const;
 		void SetMode(MouseModes mode);
 
 	private:

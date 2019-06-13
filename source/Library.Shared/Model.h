@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <fstream>
+#include "RTTI.h"
 
 namespace Library
 {
@@ -13,32 +14,30 @@ namespace Library
 	class OutputStreamHelper;
 	class InputStreamHelper;
 
-	struct ModelData
+	struct ModelData final
 	{
 		std::vector<std::shared_ptr<Mesh>> Meshes;
 		std::vector<std::shared_ptr<ModelMaterial>> Materials;
-
-		ModelData() = default;
-		ModelData(const ModelData&) = delete;
-		ModelData& operator=(const ModelData&) = delete;
-		ModelData(ModelData&& rhs);
-		ModelData& operator=(ModelData&& rhs);
-		~ModelData() = default;
 	};
 
-    class Model
+    class Model final : public RTTI
     {
+		RTTI_DECLARATIONS(Model, RTTI)
+
     public:
 		Model() = default;
 		Model(const std::string& filename);
 		Model(std::ifstream& file);
 		Model(ModelData&& modelData);
-		Model(Model&& rhs);
-		Model& operator=(Model&& rhs);
+		Model(const Model&) = default;
+		Model(Model&&) = default;
+		Model& operator=(const Model&) = default;
+		Model& operator=(Model&&) = default;
+		~Model() = default;
 
         bool HasMeshes() const;
         bool HasMaterials() const;
-		
+
         const std::vector<std::shared_ptr<Mesh>>& Meshes() const;
 		const std::vector<std::shared_ptr<ModelMaterial>>& Materials() const;
 
