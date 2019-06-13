@@ -1,15 +1,16 @@
 #pragma once
 
-#include <wrl.h>
-#include <d3d11_2.h>
-#include <DirectXMath.h>
-#include <cstdint>
-#include <memory>
+#include <gsl\gsl>
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <winrt\Windows.Foundation.h>
+#include <d3d11.h>
 #include "DrawableGameComponent.h"
+#include "MatrixHelper.h"
 
 namespace Library
 {
-	class Camera;
 	class Mesh;
 }
 
@@ -31,24 +32,23 @@ namespace Rendering
 		struct CBufferPerObject
 		{
 			DirectX::XMFLOAT4X4 WorldViewProjection;
-
-			CBufferPerObject() = default;
-			CBufferPerObject(const DirectX::XMFLOAT4X4& wvp) : WorldViewProjection(wvp) { }
 		};
 
-		void CreateVertexBuffer(const Library::Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
+		void CreateVertexBuffer(const Library::Mesh& mesh, gsl::not_null<ID3D11Buffer**> vertexBuffer) const;
 
-		static const float RotationRate;
+		inline static const float RotationRate{ DirectX::XM_PI };
 
-		DirectX::XMFLOAT4X4 mWorldMatrix;
+		DirectX::XMFLOAT4X4 mWorldMatrix{ Library::MatrixHelper::Identity };
 		CBufferPerObject mCBufferPerObject;
-		Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
-		Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
-		Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mConstantBuffer;		
-		std::uint32_t mIndexCount;
-		bool mAnimationEnabled;
+		winrt::com_ptr<ID3D11VertexShader> mVertexShader;
+		winrt::com_ptr<ID3D11PixelShader> mPixelShader;
+		winrt::com_ptr<ID3D11InputLayout> mInputLayout;
+		winrt::com_ptr<ID3D11Buffer> mVertexBuffer;
+		winrt::com_ptr<ID3D11Buffer> mIndexBuffer;
+		winrt::com_ptr<ID3D11Buffer> mConstantBuffer;
+		std::uint32_t mIndexCount{ 0 };
+		float mRotationAngle{ 0.0f };
+		bool mAnimationEnabled{ true };
+		bool mUpdateConstantBuffer{ true };
 	};
 }

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <wrl.h>
-#include <d3d11_2.h>
+#include <winrt\Windows.Foundation.h>
+#include <d3d11.h>
 #include "DrawableGameComponent.h"
 
 namespace Rendering
@@ -17,9 +17,9 @@ namespace Rendering
 		virtual void Draw(const Library::GameTime& gameTime) override;
 
 	private:
-		Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
-		Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
-		Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
+		winrt::com_ptr<ID3D11VertexShader> mVertexShader;
+		winrt::com_ptr<ID3D11PixelShader> mPixelShader;
+		winrt::com_ptr<ID3D11InputLayout> mInputLayout;
+		winrt::com_ptr<ID3D11Buffer> mVertexBuffer;
 	};
 }

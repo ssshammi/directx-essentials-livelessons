@@ -1,10 +1,9 @@
-struct VS_OUTPUT
+cbuffer CBufferPerObject
 {
-	float4 Position: SV_Position;
-	float4 Color : COLOR;
-};
+	float4 SurfaceColor;
+}
 
-float4 main(VS_OUTPUT IN) : SV_TARGET
+float4 main(float4 position : SV_Position) : SV_TARGET
 {
-	return IN.Color;
+	return SurfaceColor;
 }

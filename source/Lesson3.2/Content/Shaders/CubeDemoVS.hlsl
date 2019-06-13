@@ -1,6 +1,6 @@
 cbuffer CBufferPerObject
 {
-	float4x4 WorldViewProjection : WORLDVIEWPROJECTION;
+	float4x4 WorldViewProjection;
 }
 
 struct VS_INPUT

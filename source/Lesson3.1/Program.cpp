@@ -1,49 +1,45 @@
 ﻿#include "pch.h"
+#include "GameException.h"
+#include "UtilityWin32.h"
+#include "RenderingGame.h"
 
 using namespace Library;
 using namespace Rendering;
 using namespace std;
+using namespace std::string_literals;
 
-void Shutdown(const wstring& className);
-
-const SIZE RenderTargetSize = { 1024, 768 };
-HWND mWindowHandle;
-WNDCLASSEX mWindow;
-unique_ptr<RenderingGame> mGame;
-
-int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR commandLine, int showCommand)
+int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int showCommand)
 {
 #if defined(DEBUG) | defined(_DEBUG)
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-	UNREFERENCED_PARAMETER(previousInstance);
-	UNREFERENCED_PARAMETER(commandLine);
-
-	SetCurrentDirectory(UtilityWin32::ExecutableDirectory().c_str());
-
 	ThrowIfFailed(CoInitializeEx(nullptr, COINITBASE_MULTITHREADED), "Error initializing COM.");
 
-	static const wstring windowClassName = L"RenderingClass";
-	static const wstring windowTitle = L"DirectX Essentials";
+	const wstring windowClassName = L"RenderingClass"s;
+	const wstring windowTitle = L"DirectX Essentials"s;
 
-	UtilityWin32::InitializeWindow(mWindow, mWindowHandle, instance, windowClassName, windowTitle, RenderTargetSize, showCommand);
+	const SIZE RenderTargetSize = { 1024, 768 };
+	HWND windowHandle;
+	WNDCLASSEX window;
 
-	auto getRenderTargetSize = [](SIZE& renderTargetSize)
+	UtilityWin32::InitializeWindow(window, windowHandle, instance, windowClassName, windowTitle, RenderTargetSize, showCommand);
+
+	auto getRenderTargetSize = [&RenderTargetSize](SIZE & renderTargetSize)
 	{
 		renderTargetSize = RenderTargetSize;
 	};
 
 	auto getWindow = [&]() -> void*
 	{
-		return reinterpret_cast<void*>(mWindowHandle);
+		return reinterpret_cast<void*>(windowHandle);
 	};
 
-	mGame = make_unique<RenderingGame>(getWindow, getRenderTargetSize);
-	mGame->UpdateRenderTargetSize();
-	mGame->Initialize();
+	RenderingGame game(getWindow, getRenderTargetSize);
+	game.UpdateRenderTargetSize();
+	game.Initialize();
 
-	MSG message = { 0 };
+	MSG message{ 0 };
 
 	try
 	{
@@ -56,24 +52,18 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR command
 			}
 			else
 			{
-				mGame->Run();
+				game.Run();
 			}
 		}
 	}
 	catch (GameException ex)
 	{
-		MessageBox(mWindowHandle, ex.whatw().c_str(), windowTitle.c_str(), MB_ABORTRETRYIGNORE);
+		MessageBox(windowHandle, ex.whatw().c_str(), windowTitle.c_str(), MB_ABORTRETRYIGNORE);
 	}
 
-	Shutdown(windowClassName);
-
+	game.Shutdown();
+	UnregisterClass(windowClassName.c_str(), window.hInstance);
 	CoUninitialize();
 
 	return static_cast<int>(message.wParam);
-}
-
-void Shutdown(const wstring& className)
-{
-	mGame->Shutdown();
-	UnregisterClass(className.c_str(), mWindow.hInstance);
 }
