@@ -220,6 +220,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)imgui_impl_dx11.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)VertexDeclarations.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Camera.h">
@@ -267,9 +270,6 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)SpotLight.h">
       <Filter>Lights</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)VertexDeclarations.h">
-      <Filter>Misc</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)ProxyModel.h">
       <Filter>Misc</Filter>
@@ -406,6 +406,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)imgui_impl_dx11.h">
       <Filter>ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)VertexDeclarations.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)packages.config" />
@@ -437,7 +440,7 @@
       <Filter>Materials</Filter>
     </None>
     <None Include="$(MSBuildThisFileDirectory)VertexDeclarations.inl">
-      <Filter>Misc</Filter>
+      <Filter>Graphics</Filter>
     </None>
   </ItemGroup>
 </Project>

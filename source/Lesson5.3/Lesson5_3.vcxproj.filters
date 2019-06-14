@@ -18,12 +18,12 @@
     <ClCompile Include="BlinnPhongDemo.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="RenderingGame.cpp" />
-    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="BlinnPhongMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BlinnPhongDemo.h" />
     <ClInclude Include="RenderingGame.h" />
-    <ClInclude Include="pch.h" />
+    <ClInclude Include="BlinnPhongMaterial.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Content\Textures\Earthatday.dds">

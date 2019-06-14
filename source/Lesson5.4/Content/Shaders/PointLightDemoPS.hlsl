@@ -21,8 +21,8 @@ struct VS_OUTPUT
 	float4 Position: SV_Position;
 	float3 WorldPosition : WORLDPOS;
 	float Attenuation : ATTENUATION;
-	float2 TextureCoordinate : TEXCOORD;
-	float3 Normal : NORMAL;	
+	float2 TextureCoordinates : TEXCOORD;
+	float3 Normal : NORMAL;
 };
 
 float4 main(VS_OUTPUT IN) : SV_TARGET
@@ -34,10 +34,10 @@ float4 main(VS_OUTPUT IN) : SV_TARGET
 	float n_dot_l = dot(normal, lightDirection);
 	float3 halfVector = normalize(lightDirection + viewDirection);
 	float n_dot_h = dot(normal, halfVector);
-
-	float4 color = ColorMap.Sample(TextureSampler, IN.TextureCoordinate);
-	float specularClamp = SpecularMap.Sample(TextureSampler, IN.TextureCoordinate).x;
 	float2 lightCoefficients = lit(n_dot_l, n_dot_h, SpecularPower).yz;
+
+	float4 color = ColorMap.Sample(TextureSampler, IN.TextureCoordinates);
+	float specularClamp = SpecularMap.Sample(TextureSampler, IN.TextureCoordinates).x;
 
 	float3 ambient = color.rgb * AmbientColor;
 	float3 diffuse = color.rgb * lightCoefficients.x * LightColor * IN.Attenuation;

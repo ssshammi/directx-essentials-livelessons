@@ -18,12 +18,12 @@
     <ClCompile Include="AmbientLightingDemo.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="RenderingGame.cpp" />
-    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="AmbientLightingMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AmbientLightingDemo.h" />
     <ClInclude Include="RenderingGame.h" />
-    <ClInclude Include="pch.h" />
+    <ClInclude Include="AmbientLightingMaterial.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Content\Models\Sphere.obj.bin">

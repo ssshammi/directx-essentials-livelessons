@@ -1,91 +1,63 @@
 #pragma once
 
+#include <gsl\gsl>
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <winrt\Windows.Foundation.h>
+#include <d3d11.h>
 #include "DrawableGameComponent.h"
-#include "RenderStateHelper.h"
-#include <DirectXMath.h>
+#include "MatrixHelper.h"
+#include "DirectionalLight.h"
 
 namespace Library
 {
-	class Mesh;
-	class DirectionalLight;
 	class ProxyModel;
-	class KeyboardComponent;
-}
-
-namespace DirectX
-{
-	class SpriteBatch;
-	class SpriteFont;
 }
 
 namespace Rendering
 {
+	class DiffuseLightingMaterial;
+
 	class DiffuseLightingDemo final : public Library::DrawableGameComponent
 	{
-		RTTI_DECLARATIONS(DiffuseLightingDemo, Library::DrawableGameComponent)
-
 	public:
-		DiffuseLightingDemo(Library::Game& game, const std::shared_ptr<Library::Camera>& camera);		
+		DiffuseLightingDemo(Library::Game& game, const std::shared_ptr<Library::Camera>& camera);
+		DiffuseLightingDemo(const DiffuseLightingDemo&) = delete;
+		DiffuseLightingDemo(DiffuseLightingDemo&&) = default;
+		DiffuseLightingDemo& operator=(const DiffuseLightingDemo&) = default;		
+		DiffuseLightingDemo& operator=(DiffuseLightingDemo&&) = default;
+		~DiffuseLightingDemo();
 
 		bool AnimationEnabled() const;
 		void SetAnimationEnabled(bool enabled);
+		void ToggleAnimation();
+
+		float AmbientLightIntensity() const;
+		void SetAmbientLightIntensity(float intensity);
+
+		float DirectionalLightIntensity() const;
+		void SetDirectionalLightIntensity(float intensity);
+
+		const DirectX::XMFLOAT3& LightDirection() const;
+		void RotateDirectionalLight(DirectX::XMFLOAT2 amount);
 
 		virtual void Initialize() override;
 		virtual void Update(const Library::GameTime& gameTime) override;
 		virtual void Draw(const Library::GameTime& gameTime) override;
 
 	private:
-		struct VertexCBufferPerObject
-		{
-			DirectX::XMFLOAT4X4 WorldViewProjection;
-			DirectX::XMFLOAT4X4 World;
+		inline static const float RotationRate{ DirectX::XM_PI };
 
-			VertexCBufferPerObject() = default;
-			VertexCBufferPerObject(const DirectX::XMFLOAT4X4& wvp, const DirectX::XMFLOAT4X4& world) : WorldViewProjection(wvp), World(world) { }
-		};
-
-		struct PixelCBufferPerFrame
-		{
-			DirectX::XMFLOAT4 AmbientColor;
-			DirectX::XMFLOAT3 LightDirection;
-			float Padding;
-			DirectX::XMFLOAT4 LightColor;			
-
-			PixelCBufferPerFrame() :
-				AmbientColor(DirectX::Colors::Black), LightDirection(0.0f, 0.0f, 1.0f), LightColor(DirectX::Colors::White) { }
-
-			PixelCBufferPerFrame(const DirectX::XMFLOAT4& ambientColor, const DirectX::XMFLOAT3& lightDirection, const DirectX::XMFLOAT4& lightColor) :
-				AmbientColor(ambientColor), LightDirection(lightDirection), LightColor(lightColor) { }
-		};
-
-		void CreateVertexBuffer(const Library::Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
-		void ToggleAnimation();
-		void UpdateAmbientLight(const Library::GameTime& gameTime);
-		void UpdateDirectionalLight(const Library::GameTime& gameTime);
-
-		static const float ModelRotationRate;
-		static const DirectX::XMFLOAT2 LightRotationRate;
-
-		VertexCBufferPerObject mVertexCBufferPerObjectData;
-		DirectX::XMFLOAT4X4 mWorldMatrix;
-		PixelCBufferPerFrame mPixelCBufferPerFrameData;		
-		Library::RenderStateHelper mRenderStateHelper;
-		Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
-		Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
-		Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexCBufferPerObject;		
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexCBufferPerFrame;		
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mPixelCBufferPerFrame;
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mColorTexture;
-		std::uint32_t mIndexCount;
-		std::unique_ptr<Library::DirectionalLight> mDirectionalLight;
+		std::shared_ptr<DiffuseLightingMaterial> mMaterial;
+		DirectX::XMFLOAT4X4 mWorldMatrix{ Library::MatrixHelper::Identity };
+		winrt::com_ptr<ID3D11Buffer> mVertexBuffer;
+		winrt::com_ptr<ID3D11Buffer> mIndexBuffer;
+		std::uint32_t mIndexCount{ 0 };
+		Library::DirectionalLight mDirectionalLight;
 		std::unique_ptr<Library::ProxyModel> mProxyModel;
-		std::unique_ptr<DirectX::SpriteBatch> mSpriteBatch;
-		std::unique_ptr<DirectX::SpriteFont> mSpriteFont;
-		DirectX::XMFLOAT2 mTextPosition;
-		Library::KeyboardComponent* mKeyboard;
-		bool mAnimationEnabled;
+		float mModelRotationAngle{ 0.0f };
+		bool mAnimationEnabled{ true };
+		bool mUpdateMaterial{ true };
 	};
 }

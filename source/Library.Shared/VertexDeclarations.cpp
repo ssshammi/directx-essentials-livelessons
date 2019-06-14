@@ -126,40 +126,4 @@ namespace Library
 
 		VertexDeclaration::CreateVertexBuffer(device, vertices, vertexBuffer);
 	}
-
-	void VertexSkinnedPositionTextureNormal::CreateVertexBuffer(not_null<ID3D11Device*> device, const Mesh& mesh, not_null<ID3D11Buffer**> vertexBuffer)
-	{
-		const vector<XMFLOAT3>& sourceVertices = mesh.Vertices();
-		const auto& sourceUVs = mesh.TextureCoordinates().at(0);
-		assert(sourceUVs.size() == sourceVertices.size());
-		const auto& sourceNormals = mesh.Normals();
-		assert(sourceNormals.size() == sourceVertices.size());
-		const auto& boneWeights = mesh.BoneWeights();
-		assert(boneWeights.size() == sourceVertices.size());
-
-		vector<VertexSkinnedPositionTextureNormal> vertices;
-		vertices.reserve(sourceVertices.size());
-		for (size_t i = 0; i < sourceVertices.size(); i++)
-		{
-			const XMFLOAT3& position = sourceVertices.at(i);
-			const XMFLOAT3& uv = sourceUVs.at(i);
-			const XMFLOAT3& normal = sourceNormals.at(i);
-			const BoneVertexWeights& vertexWeights = boneWeights.at(i);
-
-			float weights[BoneVertexWeights::MaxBoneWeightsPerVertex];
-			uint32_t indices[BoneVertexWeights::MaxBoneWeightsPerVertex];
-			ZeroMemory(weights, sizeof(float) * size(weights));
-			ZeroMemory(indices, sizeof(uint32_t) * size(indices));
-			for (size_t j = 0; j < vertexWeights.Weights().size(); j++)
-			{
-				const BoneVertexWeights::VertexWeight& vertexWeight = vertexWeights.Weights().at(j);
-				weights[j] = vertexWeight.Weight;
-				indices[j] = vertexWeight.BoneIndex;
-			}
-
-			vertices.emplace_back(XMFLOAT4(position.x, position.y, position.z, 1.0f), XMFLOAT2(uv.x, uv.y), normal, XMUINT4(indices), XMFLOAT4(weights));
-		}
-
-		VertexDeclaration::CreateVertexBuffer(device, vertices, vertexBuffer);
-	}
 }

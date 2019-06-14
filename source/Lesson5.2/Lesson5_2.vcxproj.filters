@@ -18,12 +18,12 @@
     <ClCompile Include="RenderingGame.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="DiffuseLightingDemo.cpp" />
-    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="DiffuseLightingMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RenderingGame.h" />
     <ClInclude Include="DiffuseLightingDemo.h" />
-    <ClInclude Include="pch.h" />
+    <ClInclude Include="DiffuseLightingMaterial.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Content\Models\DirectionalLightProxy.obj.bin">
@@ -35,10 +35,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Content\Shaders\DiffuseLightingPS.hlsl">
+    <FxCompile Include="Content\Shaders\DiffuseLightingDemoPS.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Content\Shaders\DiffuseLightingVS.hlsl">
+    <FxCompile Include="Content\Shaders\DiffuseLightingDemoVS.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

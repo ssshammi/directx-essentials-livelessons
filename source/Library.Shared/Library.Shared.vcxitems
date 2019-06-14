@@ -79,6 +79,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TextureHelper.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Utility.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)VectorHelper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)VertexDeclarations.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)VertexShader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)VertexShaderReader.cpp" />
   </ItemGroup>

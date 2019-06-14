@@ -18,12 +18,12 @@
     <ClCompile Include="SpotLightDemo.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="RenderingGame.cpp" />
-    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="SpotLightMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SpotLightDemo.h" />
     <ClInclude Include="RenderingGame.h" />
-    <ClInclude Include="pch.h" />
+    <ClInclude Include="SpotLightMaterial.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\Shaders\SpotLightDemoVS.hlsl">
