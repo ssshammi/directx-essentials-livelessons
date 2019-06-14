@@ -15,12 +15,10 @@
     <ClCompile Include="RenderingGame.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="AddressingModesDemo.cpp" />
-    <ClCompile Include="pch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RenderingGame.h" />
     <ClInclude Include="AddressingModesDemo.h" />
-    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\Shaders\AddressingModesDemoPS.hlsl">
