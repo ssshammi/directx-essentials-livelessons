@@ -15,9 +15,6 @@
 #endif
 
 // DirectX
-#include <d3d11_2.h>
-#include <dxgi1_3.h>
+#include <d3d11_4.h>
+#include <dxgi1_6.h>
 #include <DirectXMath.h>
-
-// Local
-#include "GameException.h"

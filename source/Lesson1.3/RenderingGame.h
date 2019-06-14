@@ -1,9 +1,7 @@
 #pragma once
 
-#include <windows.h>
-#include <functional>
-#include <DirectXColors.h>
 #include "Game.h"
+#include <DirectXColors.h>
 
 namespace Library
 {

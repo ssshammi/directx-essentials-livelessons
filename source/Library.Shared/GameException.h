@@ -6,7 +6,7 @@
 
 namespace Library
 {
-	class GameException : public std::exception
+	class GameException : public std::runtime_error
 	{
 	public:
 		GameException(const char* const message, HRESULT hr = S_OK);

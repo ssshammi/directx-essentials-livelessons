@@ -3,7 +3,6 @@
 using namespace std;
 using namespace DirectX;
 using namespace Microsoft::WRL;
-using namespace Library;
 
 void InitializeWindow(HINSTANCE instance, const wstring& className, const wstring windowTitle, int showCommand);
 LRESULT WINAPI WndProc(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam);
@@ -23,6 +22,14 @@ ComPtr<ID3D11RenderTargetView> mRenderTargetView;
 ComPtr<ID3D11DepthStencilView> mDepthStencilView;
 
 const XMVECTORF32 BackgroundColor = { 0.392f, 0.584f, 0.929f, 1.0f };
+
+inline void ThrowIfFailed(HRESULT hr, const char* const message = "")
+{
+	if (FAILED(hr))
+	{
+		throw runtime_error(message);
+	}
+}
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR commandLine, int showCommand)
 {
@@ -139,7 +146,7 @@ void InitializeDirectX()
 	ThrowIfFailed(mDirect3DDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, multiSamplingCount, &multiSamplingQualityLevels), "CheckMultisampleQualityLevels() failed.");
 	if (multiSamplingQualityLevels == 0)
 	{
-		throw GameException("Unsupported multi-sampling quality");
+		throw runtime_error("Unsupported multi-sampling quality");
 	}
 
 #ifndef NDEBUG

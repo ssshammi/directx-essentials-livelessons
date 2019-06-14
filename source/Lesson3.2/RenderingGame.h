@@ -1,10 +1,8 @@
 #pragma once
 
-#include <windows.h>
-#include <functional>
-#include <DirectXColors.h>
 #include "Game.h"
 #include "RenderStateHelper.h"
+#include <DirectXColors.h>
 
 namespace Library
 {

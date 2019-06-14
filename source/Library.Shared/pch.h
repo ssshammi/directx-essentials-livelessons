@@ -29,9 +29,6 @@
 #include <gsl\gsl>
 
 // Windows
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
 #include <windows.h>
 #include <winrt\Windows.Foundation.h>
 
