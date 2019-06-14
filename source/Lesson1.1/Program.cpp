@@ -41,7 +41,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int showCommand)
 	ThrowIfFailed(CoInitializeEx(nullptr, COINITBASE_MULTITHREADED), "Error initializing COM.");
 
 	wstring windowClassName = L"RenderingClass"s;
-	InitializeWindow(instance, windowClassName, L"1.1 - Win32 Startup"s, showCommand);
+	InitializeWindow(instance, windowClassName, L"DirectX Essentials"s, showCommand);
 	InitializeDirectX();
 
 	MSG message = { 0 };
