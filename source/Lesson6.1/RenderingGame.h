@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Game.h"
-#include "RenderStateHelper.h"
 #include <windows.h>
 #include <functional>
+#include "Game.h"
 
 namespace Library
 {
@@ -11,9 +10,7 @@ namespace Library
 	class MouseComponent;
 	class GamePadComponent;
 	class FpsComponent;
-	class Camera;
 	class Grid;
-	class Skybox;
 }
 
 namespace Rendering
@@ -33,16 +30,20 @@ namespace Rendering
 		void Exit();
 
 	private:
-		static const DirectX::XMVECTORF32 BackgroundColor;
+		inline static const DirectX::XMVECTORF32 BackgroundColor{ DirectX::Colors::CornflowerBlue };
 
-		Library::RenderStateHelper mRenderStateHelper;
+		void UpdateAmbientLightIntensity(const Library::GameTime& gameTime);
+		void UpdateEnvironmentIntensity(const Library::GameTime& gameTime);
+		void UpdateReflectionAmount(const Library::GameTime& gameTime);
+
 		std::shared_ptr<Library::KeyboardComponent> mKeyboard;
 		std::shared_ptr<Library::MouseComponent> mMouse;
 		std::shared_ptr<Library::GamePadComponent> mGamePad;
 		std::shared_ptr<Library::FpsComponent> mFpsComponent;
-		std::shared_ptr<Library::Camera> mCamera;
 		std::shared_ptr<Library::Grid> mGrid;
-		std::shared_ptr<Library::Skybox> mSkybox;
 		std::shared_ptr<EnvironmentMappingDemo> mEnvironmentMappingDemo;
+		float mAmbientLightIntensity{ 0.0f };
+		float mEnvironmentIntensity{ 0.0f };
+		float mReflectionAmount{ 0.9f };
 	};
 }

@@ -18,12 +18,12 @@
     <ClCompile Include="TransparencyMappingDemo.cpp" />
     <ClCompile Include="RenderingGame.cpp" />
     <ClCompile Include="Program.cpp" />
-    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="TransparencyMappingMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TransparencyMappingDemo.h" />
     <ClInclude Include="RenderingGame.h" />
-    <ClInclude Include="pch.h" />
+    <ClInclude Include="TransparencyMappingMaterial.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\Shaders\TransparencyMappingDemoPS.hlsl">
@@ -35,9 +35,6 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Content\Textures\Checkerboard.png">
-      <Filter>Content\Textures</Filter>
-    </Image>
-    <Image Include="Content\Textures\Maskonaive2_1024.dds">
       <Filter>Content\Textures</Filter>
     </Image>
     <Image Include="Content\Textures\AlphaMask_32bpp.png">

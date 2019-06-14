@@ -1,99 +1,49 @@
 #pragma once
 
+#include <gsl\gsl>
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <winrt\Windows.Foundation.h>
+#include <d3d11.h>
 #include "DrawableGameComponent.h"
-#include "RenderStateHelper.h"
-#include <DirectXMath.h>
-
-namespace Library
-{
-	class Mesh;
-	class KeyboardComponent;
-}
-
-namespace DirectX
-{
-	class SpriteBatch;
-	class SpriteFont;
-}
+#include "MatrixHelper.h"
+#include "PointLight.h"
 
 namespace Rendering
 {
-	class EnvironmentMappingDemo : public Library::DrawableGameComponent
-	{
-		RTTI_DECLARATIONS(EnvironmentMappingDemo, Library::DrawableGameComponent)
+	class EnvironmentMappingMaterial;
 
-	public:		
+	class EnvironmentMappingDemo final : public Library::DrawableGameComponent
+	{
+	public:
 		EnvironmentMappingDemo(Library::Game& game, const std::shared_ptr<Library::Camera>& camera);
+		EnvironmentMappingDemo(const EnvironmentMappingDemo&) = delete;
+		EnvironmentMappingDemo(EnvironmentMappingDemo&&) = default;
+		EnvironmentMappingDemo& operator=(const EnvironmentMappingDemo&) = default;		
+		EnvironmentMappingDemo& operator=(EnvironmentMappingDemo&&) = default;
+		~EnvironmentMappingDemo();
+
+		float AmbientLightIntensity() const;
+		void SetAmbientLightIntensity(float intensity);
+
+		float EnvironmentIntensity() const;
+		void SetEnvironmentIntensity(float intensity);
+
+		float ReflectionAmount() const;
+		void SetReflectionAmount(float amount);
 
 		virtual void Initialize() override;
-		virtual void Update(const Library::GameTime& gameTime) override;
 		virtual void Draw(const Library::GameTime& gameTime) override;
 
 	private:
-		struct VSCBufferPerFrame
-		{
-			DirectX::XMFLOAT3 CameraPosition;
-			float Padding;
+		inline static const float RotationRate{ DirectX::XM_PI };
 
-			VSCBufferPerFrame() :
-				CameraPosition(Library::Vector3Helper::Zero) { }
-			VSCBufferPerFrame(const DirectX::XMFLOAT3& cameraPosition) :
-				CameraPosition(cameraPosition) { }
-		};
-
-		struct VSCBufferPerObject
-		{
-			DirectX::XMFLOAT4X4 WorldViewProjection;
-			DirectX::XMFLOAT4X4 World;
-
-			VSCBufferPerObject() = default;
-			VSCBufferPerObject(const DirectX::XMFLOAT4X4& wvp, const DirectX::XMFLOAT4X4& world) :
-				WorldViewProjection(wvp), World(world) { }
-		};
-
-		struct PSCBufferPerFrame
-		{
-			DirectX::XMFLOAT4 AmbientColor;
-			DirectX::XMFLOAT4 EnvColor;
-
-			PSCBufferPerFrame() :
-				AmbientColor(Library::Vector4Helper::One), EnvColor(Library::Vector4Helper::One) { }
-			PSCBufferPerFrame(const DirectX::XMFLOAT4& ambientColor, const DirectX::XMFLOAT4& envColor) :
-				AmbientColor(ambientColor), EnvColor(envColor) { }
-		};
-
-		struct PSCBufferPerObject
-		{
-			float ReflectionAmount;
-			DirectX::XMFLOAT3 Padding;
-
-			PSCBufferPerObject() : ReflectionAmount(0.9f) { }
-			PSCBufferPerObject(float reflectionAmount) : ReflectionAmount(reflectionAmount) { }
-		};
-
-		void CreateVertexBuffer(const Library::Mesh& mesh, ID3D11Buffer** vertexBuffer) const;
-				
-		DirectX::XMFLOAT4X4 mWorldMatrix;
-		PSCBufferPerFrame mPSCBufferPerFrameData;		
-		VSCBufferPerFrame mVSCBufferPerFrameData;
-		VSCBufferPerObject mVSCBufferPerObjectData;
-		PSCBufferPerObject mPSCBufferPerObjectData;
-		Library::RenderStateHelper mRenderStateHelper;
-		Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
-		Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
-		Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mVertexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mIndexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mVSCBufferPerFrame;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mVSCBufferPerObject;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mPSCBufferPerFrame;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> mPSCBufferPerObject;
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mColorTexture;
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mEnvironmentMap;
-		Library::KeyboardComponent* mKeyboard;
-		std::uint32_t mIndexCount;
-		std::unique_ptr<DirectX::SpriteBatch> mSpriteBatch;
-		std::unique_ptr<DirectX::SpriteFont> mSpriteFont;
-		DirectX::XMFLOAT2 mTextPosition;
+		std::shared_ptr<EnvironmentMappingMaterial> mMaterial;
+		DirectX::XMFLOAT4X4 mWorldMatrix{ Library::MatrixHelper::Identity };
+		winrt::com_ptr<ID3D11Buffer> mVertexBuffer;
+		winrt::com_ptr<ID3D11Buffer> mIndexBuffer;
+		std::uint32_t mIndexCount{ 0 };
+		bool mUpdateMaterial{ true };
 	};
 }

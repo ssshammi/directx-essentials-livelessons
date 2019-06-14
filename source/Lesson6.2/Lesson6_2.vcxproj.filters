@@ -18,12 +18,12 @@
     <ClCompile Include="RenderingGame.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="FogDemo.cpp" />
-    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="FogMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RenderingGame.h" />
     <ClInclude Include="FogDemo.h" />
-    <ClInclude Include="pch.h" />
+    <ClInclude Include="FogMaterial.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\Shaders\FogDemoPS.hlsl">

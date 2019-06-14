@@ -16,8 +16,10 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int showCommand)
 
 	ThrowIfFailed(CoInitializeEx(nullptr, COINITBASE_MULTITHREADED), "Error initializing COM.");
 
+	current_path(UtilityWin32::ExecutableDirectory());
+
 	const wstring windowClassName = L"RenderingClass"s;
- 	const wstring windowTitle = L"DirectX Essentials"s;
+	const wstring windowTitle = L"DirectX Essentials"s;
 
 	const SIZE RenderTargetSize = { 1024, 768 };
 	HWND windowHandle;

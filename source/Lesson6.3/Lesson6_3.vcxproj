@@ -201,20 +201,15 @@ IF EXIST "$(ProjectDir)content" xcopy /E /Y "$(ProjectDir)Content" "$(OutDir)Con
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="TransparencyMappingDemo.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="RenderingGame.cpp" />
+    <ClCompile Include="TransparencyMappingMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h" />
     <ClInclude Include="TransparencyMappingDemo.h" />
     <ClInclude Include="RenderingGame.h" />
+    <ClInclude Include="TransparencyMappingMaterial.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\Shaders\TransparencyMappingDemoPS.hlsl">
@@ -238,9 +233,6 @@ IF EXIST "$(ProjectDir)content" xcopy /E /Y "$(ProjectDir)Content" "$(OutDir)Con
       <DeploymentContent>true</DeploymentContent>
     </Image>
     <Image Include="Content\Textures\CheckerboardSpecularMap.png">
-      <DeploymentContent>true</DeploymentContent>
-    </Image>
-    <Image Include="Content\Textures\Maskonaive2_1024.dds">
       <DeploymentContent>true</DeploymentContent>
     </Image>
   </ItemGroup>

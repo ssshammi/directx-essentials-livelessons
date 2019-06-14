@@ -18,12 +18,12 @@
     <ClCompile Include="RenderingGame.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="EnvironmentMappingDemo.cpp" />
-    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="EnvironmentMappingMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RenderingGame.h" />
     <ClInclude Include="EnvironmentMappingDemo.h" />
-    <ClInclude Include="pch.h" />
+    <ClInclude Include="EnvironmentMappingMaterial.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\Shaders\EnvironmentMappingDemoPS.hlsl">
