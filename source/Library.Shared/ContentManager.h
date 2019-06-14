@@ -3,8 +3,8 @@
 #include <memory>
 #include <map>
 #include <algorithm>
+#include <functional>
 #include "RTTI.h"
-#include "GameException.h"
 #include "StringHelper.h"
 
 namespace Library

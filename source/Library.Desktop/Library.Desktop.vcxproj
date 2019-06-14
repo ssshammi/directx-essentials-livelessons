@@ -129,6 +129,7 @@
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
       <ProgramDataBaseFileName>$(SharedPdb)</ProgramDataBaseFileName>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -158,6 +159,7 @@ xcopy /E /Y "$(OutDir)Content" "$(SolutionDir)..\Content\"</Command>
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
       <ProgramDataBaseFileName>$(SharedPdb)</ProgramDataBaseFileName>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -188,6 +190,7 @@ xcopy /E /Y "$(OutDir)Content" "$(SolutionDir)..\Content\"</Command>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <DisableSpecificWarnings>4717</DisableSpecificWarnings>
       <ProgramDataBaseFileName>$(SharedPdb)</ProgramDataBaseFileName>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -220,6 +223,7 @@ xcopy /E /Y "$(OutDir)Content" "$(SolutionDir)..\Content\"</Command>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <DisableSpecificWarnings>4717</DisableSpecificWarnings>
       <ProgramDataBaseFileName>$(SharedPdb)</ProgramDataBaseFileName>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

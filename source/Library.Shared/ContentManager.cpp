@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ContentManager.h"
 #include "ContentTypeReaderManager.h"
+#include "GameException.h"
 
 using namespace std;
 

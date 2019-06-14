@@ -1,27 +1,16 @@
 ﻿#include "pch.h"
 
 using namespace std;
+using namespace std::string_literals;
+using namespace gsl;
+using namespace winrt;
 using namespace DirectX;
-using namespace Microsoft::WRL;
 
-void InitializeWindow(HINSTANCE instance, const wstring& className, const wstring windowTitle, int showCommand);
+void InitializeWindow(HINSTANCE instance, const wstring& className, const wstring& windowTitle, int showCommand);
 LRESULT WINAPI WndProc(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam);
 POINT CenterWindow(const SIZE& windowSize);
 void InitializeDirectX();
 void Shutdown(const wstring& className);
-
-const SIZE RenderTargetSize = { 1024, 768 };
-HWND mWindowHandle;
-WNDCLASSEX mWindow;
-
-D3D_FEATURE_LEVEL mFeatureLevel;
-ComPtr<ID3D11Device1> mDirect3DDevice;
-ComPtr<ID3D11DeviceContext1> mDirect3DDeviceContext;
-ComPtr<IDXGISwapChain1> mSwapChain;
-ComPtr<ID3D11RenderTargetView> mRenderTargetView;
-ComPtr<ID3D11DepthStencilView> mDepthStencilView;
-
-const XMVECTORF32 BackgroundColor = { 0.392f, 0.584f, 0.929f, 1.0f };
 
 inline void ThrowIfFailed(HRESULT hr, const char* const message = "")
 {
@@ -31,19 +20,28 @@ inline void ThrowIfFailed(HRESULT hr, const char* const message = "")
 	}
 }
 
-int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR commandLine, int showCommand)
+const SIZE RenderTargetSize = { 1024, 768 };
+HWND mWindowHandle;
+WNDCLASSEX mWindow;
+
+D3D_FEATURE_LEVEL mFeatureLevel;
+com_ptr<ID3D11Device5> mDirect3DDevice;
+com_ptr<ID3D11DeviceContext4> mDirect3DDeviceContext;
+com_ptr<IDXGISwapChain1> mSwapChain;
+com_ptr<ID3D11RenderTargetView> mRenderTargetView;
+com_ptr<ID3D11DepthStencilView> mDepthStencilView;
+
+
+int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int showCommand)
 {
-	UNREFERENCED_PARAMETER(previousInstance);
-	UNREFERENCED_PARAMETER(commandLine);
-
-	ThrowIfFailed(CoInitializeEx(nullptr, COINITBASE_MULTITHREADED), "Error initializing COM.");
-
 #if defined(DEBUG) | defined(_DEBUG)
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-	wstring windowClassName = L"RenderingClass";
-	InitializeWindow(instance, windowClassName, L"DirectX Essentials", showCommand);
+	ThrowIfFailed(CoInitializeEx(nullptr, COINITBASE_MULTITHREADED), "Error initializing COM.");
+
+	wstring windowClassName = L"RenderingClass"s;
+	InitializeWindow(instance, windowClassName, L"1.1 - Win32 Startup"s, showCommand);
 	InitializeDirectX();
 
 	MSG message = { 0 };
@@ -57,8 +55,10 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR command
 		}
 		else
 		{
-			mDirect3DDeviceContext->ClearRenderTargetView(mRenderTargetView.Get(), reinterpret_cast<const float*>(&BackgroundColor));
-			mDirect3DDeviceContext->ClearDepthStencilView(mDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+			const XMVECTORF32 BackgroundColor = { 0.392f, 0.584f, 0.929f, 1.0f };
+			mDirect3DDeviceContext->ClearRenderTargetView(mRenderTargetView.get(), BackgroundColor.f);
+			mDirect3DDeviceContext->ClearDepthStencilView(mDepthStencilView.get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 			// Game-specific code
 
@@ -72,7 +72,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR command
 	return static_cast<int>(message.wParam);
 }
 
-void InitializeWindow(HINSTANCE instance, const wstring& className, const wstring windowTitle, int showCommand)
+void InitializeWindow(HINSTANCE instance, const wstring& className, const wstring& windowTitle, int showCommand)
 {
 	ZeroMemory(&mWindow, sizeof(mWindow));
 	mWindow.cbSize = sizeof(WNDCLASSEX);
@@ -122,7 +122,7 @@ POINT CenterWindow(const SIZE& windowSize)
 
 void InitializeDirectX()
 {
-	UINT createDeviceFlags = 0;
+	uint32_t createDeviceFlags = 0;
 
 #if defined(DEBUG) || defined(_DEBUG)  
 	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -135,14 +135,17 @@ void InitializeDirectX()
 		D3D_FEATURE_LEVEL_10_0
 	};
 
-	ComPtr<ID3D11Device> direct3DDevice;
-	ComPtr<ID3D11DeviceContext> direct3DDeviceContext;
-	ThrowIfFailed(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, createDeviceFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, direct3DDevice.ReleaseAndGetAddressOf(), &mFeatureLevel, direct3DDeviceContext.ReleaseAndGetAddressOf()), "D3D11CreateDevice() failed");
-	ThrowIfFailed(direct3DDevice.As(&mDirect3DDevice));
-	ThrowIfFailed(direct3DDeviceContext.As(&mDirect3DDeviceContext));
+	com_ptr<ID3D11Device> direct3DDevice;
+	com_ptr<ID3D11DeviceContext> direct3DDeviceContext;
+	ThrowIfFailed(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, createDeviceFlags, featureLevels, narrow_cast<uint32_t>(size(featureLevels)), D3D11_SDK_VERSION, direct3DDevice.put(), &mFeatureLevel, direct3DDeviceContext.put()), "D3D11CreateDevice() failed");
+	mDirect3DDevice = direct3DDevice.as<ID3D11Device5>();
+	assert(mDirect3DDevice != nullptr);
 
-	UINT multiSamplingCount = 4;
-	UINT multiSamplingQualityLevels;
+	mDirect3DDeviceContext = direct3DDeviceContext.as<ID3D11DeviceContext4>();
+	assert(mDirect3DDeviceContext != nullptr);
+
+	uint32_t multiSamplingCount = 4;
+	uint32_t multiSamplingQualityLevels;
 	ThrowIfFailed(mDirect3DDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, multiSamplingCount, &multiSamplingQualityLevels), "CheckMultisampleQualityLevels() failed.");
 	if (multiSamplingQualityLevels == 0)
 	{
@@ -150,13 +153,11 @@ void InitializeDirectX()
 	}
 
 #ifndef NDEBUG
-	ComPtr<ID3D11Debug> d3dDebug;
-	HRESULT hr = mDirect3DDevice.As(&d3dDebug);
-	if (SUCCEEDED(hr))
+	com_ptr<ID3D11Debug> d3dDebug = mDirect3DDevice.as<ID3D11Debug>();
+	if (d3dDebug)
 	{
-		ComPtr<ID3D11InfoQueue> d3dInfoQueue;
-		hr = d3dDebug.As(&d3dInfoQueue);
-		if (SUCCEEDED(hr))
+		com_ptr<ID3D11InfoQueue> d3dInfoQueue = d3dDebug.as<ID3D11InfoQueue>();
+		if (d3dInfoQueue)
 		{
 #ifdef _DEBUG
 			d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, true);
@@ -166,15 +167,15 @@ void InitializeDirectX()
 			{
 				D3D11_MESSAGE_ID_SETPRIVATEDATA_CHANGINGPARAMS
 			};
-			D3D11_INFO_QUEUE_FILTER filter = { 0 };
-			filter.DenyList.NumIDs = _countof(hide);
+			D3D11_INFO_QUEUE_FILTER filter{ 0 };
+			filter.DenyList.NumIDs = narrow_cast<uint32_t>(size(hide));
 			filter.DenyList.pIDList = hide;
 			d3dInfoQueue->AddStorageFilterEntries(&filter);
 		}
 	}
 #endif
 
-	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { 0 };
+	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{ 0 };
 	swapChainDesc.Width = RenderTargetSize.cx;
 	swapChainDesc.Height = RenderTargetSize.cy;
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -184,26 +185,26 @@ void InitializeDirectX()
 	swapChainDesc.BufferCount = 2;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
-	ComPtr<IDXGIDevice3> dxgiDevice;
-	ThrowIfFailed(mDirect3DDevice.As(&dxgiDevice));
+	com_ptr<IDXGIDevice4> dxgiDevice = mDirect3DDevice.as<IDXGIDevice4>();
+	assert(dxgiDevice != nullptr);
 
-	ComPtr<IDXGIAdapter> dxgiAdapter;
-	ThrowIfFailed(dxgiDevice->GetAdapter(&dxgiAdapter));
+	com_ptr<IDXGIAdapter> dxgiAdapter;
+	ThrowIfFailed(dxgiDevice->GetAdapter(dxgiAdapter.put()));
 
-	ComPtr<IDXGIFactory2> dxgiFactory;
-	ThrowIfFailed(dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory)));
+	com_ptr<IDXGIFactory2> dxgiFactory;
+	ThrowIfFailed(dxgiAdapter->GetParent(IID_PPV_ARGS(dxgiFactory.put())));
 
-	DXGI_SWAP_CHAIN_FULLSCREEN_DESC fullScreenDesc = { 0 };
+	DXGI_SWAP_CHAIN_FULLSCREEN_DESC fullScreenDesc{ 0 };
 	fullScreenDesc.RefreshRate.Numerator = 60;
 	fullScreenDesc.RefreshRate.Denominator = 1;
 	fullScreenDesc.Windowed = true;
-	ThrowIfFailed(dxgiFactory->CreateSwapChainForHwnd(mDirect3DDevice.Get(), mWindowHandle, &swapChainDesc, &fullScreenDesc, nullptr, mSwapChain.ReleaseAndGetAddressOf()), "IDXGIDevice::CreateSwapChainForHwnd() failed.");
+	ThrowIfFailed(dxgiFactory->CreateSwapChainForHwnd(mDirect3DDevice.get(), mWindowHandle, &swapChainDesc, &fullScreenDesc, nullptr, mSwapChain.put()), "IDXGIDevice::CreateSwapChainForHwnd() failed.");
 
-	ComPtr<ID3D11Texture2D> backBuffer;
-	ThrowIfFailed(mSwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)), "IDXGISwapChain1::GetBuffer() failed.");
-	ThrowIfFailed(mDirect3DDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, mRenderTargetView.GetAddressOf()), "IDXGIDevice::CreateRenderTargetView() failed.");
+	com_ptr<ID3D11Texture2D> backBuffer;
+	ThrowIfFailed(mSwapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.put())), "IDXGISwapChain1::GetBuffer() failed.");
+	ThrowIfFailed(mDirect3DDevice->CreateRenderTargetView(backBuffer.get(), nullptr, mRenderTargetView.put()), "IDXGIDevice::CreateRenderTargetView() failed.");
 
-	D3D11_TEXTURE2D_DESC depthStencilDesc = { 0 };
+	D3D11_TEXTURE2D_DESC depthStencilDesc{ 0 };
 	depthStencilDesc.Width = RenderTargetSize.cx;
 	depthStencilDesc.Height = RenderTargetSize.cy;
 	depthStencilDesc.MipLevels = 1;
@@ -214,12 +215,13 @@ void InitializeDirectX()
 	depthStencilDesc.SampleDesc.Count = multiSamplingCount;
 	depthStencilDesc.SampleDesc.Quality = multiSamplingQualityLevels - 1;
 
-	ComPtr<ID3D11Texture2D> depthStencilBuffer;
-	ThrowIfFailed(mDirect3DDevice->CreateTexture2D(&depthStencilDesc, nullptr, depthStencilBuffer.GetAddressOf()), "IDXGIDevice::CreateTexture2D() failed.");
-	ThrowIfFailed(mDirect3DDevice->CreateDepthStencilView(depthStencilBuffer.Get(), nullptr, mDepthStencilView.ReleaseAndGetAddressOf()), "IDXGIDevice::CreateDepthStencilView() failed.");
+	com_ptr<ID3D11Texture2D> depthStencilBuffer;
+	ThrowIfFailed(mDirect3DDevice->CreateTexture2D(&depthStencilDesc, nullptr, depthStencilBuffer.put()), "IDXGIDevice::CreateTexture2D() failed.");
+	ThrowIfFailed(mDirect3DDevice->CreateDepthStencilView(depthStencilBuffer.get(), nullptr, mDepthStencilView.put()), "IDXGIDevice::CreateDepthStencilView() failed.");
 
 	D3D11_VIEWPORT viewport = CD3D11_VIEWPORT(0.0f, 0.0f, static_cast<float>(RenderTargetSize.cx), static_cast<float>(RenderTargetSize.cy));
-	mDirect3DDeviceContext->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), mDepthStencilView.Get());
+	auto renderTargetViews = mRenderTargetView.get();
+	mDirect3DDeviceContext->OMSetRenderTargets(1, &renderTargetViews, mDepthStencilView.get());
 	mDirect3DDeviceContext->RSSetViewports(1, &viewport);
 }
 
