@@ -12,3 +12,14 @@ source/Tools/ModelPipeline/obj/
 build/.vs/
 build/bin/
 build/obj/
+*.user
+content/Shaders/SkyboxVS.hlsl
+content/Shaders/SkyboxVS.cso
+content/Shaders/SkyboxPS.hlsl
+content/Shaders/SkyboxPS.cso
+content/Shaders/BasicVS.hlsl
+content/Shaders/BasicVS.cso
+content/Shaders/BasicPS.hlsl
+content/Shaders/BasicPS.cso
+content/Models/Sphere.obj.bin
+content/Fonts/Arial_14_Regular.spritefont
