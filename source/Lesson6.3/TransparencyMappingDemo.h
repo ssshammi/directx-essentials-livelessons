@@ -1,9 +1,6 @@
 #pragma once
 
 #include <gsl\gsl>
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
 #include <winrt\Windows.Foundation.h>
 #include <d3d11.h>
 #include "DrawableGameComponent.h"

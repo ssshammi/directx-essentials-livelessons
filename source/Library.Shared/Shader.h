@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
 #include <winrt\Windows.Foundation.h>
 #include <d3d11.h>
 #include <gsl/gsl>

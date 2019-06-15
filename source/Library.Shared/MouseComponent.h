@@ -3,10 +3,6 @@
 #include "GameComponent.h"
 #include <DirectXTK\Mouse.h>
 #include <memory>
-
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
 #include <windows.h>
 
 namespace DirectX
