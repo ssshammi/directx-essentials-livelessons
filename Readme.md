@@ -14,7 +14,7 @@ You'll find a forum for discussions and questions about the videos at [http://ww
 
 Retrieve this repository:
 ```
-> git clone https://bitbucket.org/pvarcholik/direcxtx-essentials-livelessons.git
+> git clone https://bitbucket.org/pvarcholik/directx-essentials-livelessons.git
 ```
 
 Install vcpkg ([additional detail](https://github.com/microsoft/vcpkg)):
